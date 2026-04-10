@@ -1,18 +1,24 @@
 name: Build Windows EXE
 
 on:
-  # Chạy thủ công từ GitHub UI → Actions → "Run workflow"
+  # Tự động khi push lên main hoặc khi push tag
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+    paths:
+      - '**.py'
+      - '**.spec'
+      - 'requirements.txt'
+
+  # Chạy thủ công từ GitHub UI
   workflow_dispatch:
     inputs:
       version:
         description: 'Version tag (VD: v2.1.0)'
         required: false
         default: 'latest'
-
-  # Hoặc tự động khi tạo tag version
-  push:
-    tags:
-      - 'v*.*.*'
 
 jobs:
   build-windows-exe:
