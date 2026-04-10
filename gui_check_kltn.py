@@ -150,7 +150,7 @@ class App(tk.Tk):
                  font=("Segoe UI", 20)).pack(side="left", padx=(18,6), pady=12)
         tk.Label(hdr, text="Kiểm tra Định dạng KLTN",
                  bg=C["panel"], fg=C["text"], font=("Segoe UI", 15, "bold")).pack(side="left", pady=12)
-        tk.Label(hdr, text="Trường ĐH Thủy Lợi · Khoa Kinh tế & QTKD",
+        tk.Label(hdr, text="Trường ĐH Thủy Lợi · Khoa Kinh tế và Quản lý - Khoa Kế toán và Kinh doanh",
                  bg=C["panel"], fg=C["text3"], font=("Segoe UI", 10)).pack(side="left", padx=14, pady=18)
 
         # Version badge

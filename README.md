@@ -1,6 +1,6 @@
 # CheckForm KLTN — Kiểm tra Định dạng Khóa Luận Tốt Nghiệp
 
-> Công cụ kiểm tra tự động định dạng file `.docx` theo tiêu chuẩn trình bày KLTN/ĐATN của Trường Đại học Thủy Lợi — Khoa KT & QTKD.
+> Công cụ kiểm tra tự động định dạng file `.docx` theo tiêu chuẩn trình bày KLTN/ĐATN của Trường Đại học Thủy Lợi — Khoa Kinh tế và Quản lý - Khoa Kế toán và Kinh doanh.
 
 [![Build & Push Docker image to GHCR](https://github.com/saodonga/formkltn/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/saodonga/formkltn/actions/workflows/docker-publish.yml)
 
