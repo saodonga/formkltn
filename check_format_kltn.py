@@ -936,19 +936,39 @@ class KLTNChecker:
                 f"Sửa Line spacing thành Single."
             ))
             
-        # Alignment = Left, Indent = 0
-        if align is not None and align != WD_ALIGN_PARAGRAPH.LEFT:
-            self.result.issues.append(Issue(
-                "Heading Alignment", "WARNING",
-                f"Canh lề Heading {level} không phải trái (Left).",
-                loc, "Canh lề trái (Left) cho tên chương/tiểu mục."
-            ))
-        if indent and indent > 0:
-            self.result.issues.append(Issue(
-                "Heading Indent", "WARNING",
-                f"Heading {level} bị thụt đầu dòng.",
-                loc, "Không thụt đầu dòng (First line indent = 0) cho tên chương/tiểu mục."
-            ))
+        # Alignment & Indent
+        if level == 1:
+            # Heading 1: căn giữa (CENTER) HOẶC trái (LEFT) đều OK
+            # Không thụt đầu dòng
+            if align is not None and align not in (
+                WD_ALIGN_PARAGRAPH.CENTER,
+                WD_ALIGN_PARAGRAPH.LEFT,
+            ):
+                self.result.issues.append(Issue(
+                    "Heading Alignment", "WARNING",
+                    f"Canh lề Heading 1 phải là Giữa (Center) hoặc Trái (Left), hiện đang khác.",
+                    loc, "Đặt canh lề Center hoặc Left cho tên chương (Heading 1)."
+                ))
+            if indent and indent > 0:
+                self.result.issues.append(Issue(
+                    "Heading Indent", "WARNING",
+                    "Heading 1 bị thụt đầu dòng — tên chương không được thụt lề.",
+                    loc, "Đặt First line indent = 0 cho Heading 1."
+                ))
+        else:
+            # Heading 2/3/4: canh trái
+            if align is not None and align != WD_ALIGN_PARAGRAPH.LEFT:
+                self.result.issues.append(Issue(
+                    "Heading Alignment", "WARNING",
+                    f"Canh lề Heading {level} không phải trái (Left).",
+                    loc, "Canh lề trái (Left) cho tên tiểu mục."
+                ))
+            if indent and indent > 0:
+                self.result.issues.append(Issue(
+                    "Heading Indent", "WARNING",
+                    f"Heading {level} bị thụt đầu dòng.",
+                    loc, "Không thụt đầu dòng (First line indent = 0) cho tên tiểu mục."
+                ))
 
         # Heading 1: phải in đậm, IN HOA
         if level == 1:
