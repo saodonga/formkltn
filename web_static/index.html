@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CheckForm KLTN — Kiểm tra Định dạng Khóa Luận Tốt Nghiệp</title>
+  <meta name="description" content="Công cụ kiểm tra định dạng KLTN trực tuyến — Trường Đại học Thủy Lợi, Khoa KT&QTKD" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="logo-title">CheckForm KLTN</span>
+          <span class="logo-sub">Trường ĐH Thủy Lợi · Khoa KT &amp; QTKD</span>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <span class="badge-version">v2.0 Web</span>
+        <button class="btn-ghost" id="btn-config" title="Cấu hình GVHD">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          Cấu hình GVHD
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- UPLOAD ZONE -->
+    <section class="upload-section" id="upload-section">
+      <div class="upload-zone" id="drop-zone">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+        </div>
+        <h2 class="upload-title">Kéo & thả file KLTN vào đây</h2>
+        <p class="upload-sub">Hoặc nhấn để chọn file — Hỗ trợ nhiều file .docx cùng lúc</p>
+        <input type="file" id="file-input" multiple accept=".docx" hidden />
+        <div class="upload-actions">
+          <button class="btn-primary" id="btn-select-files">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Chọn file .docx
+          </button>
+        </div>
+        <div class="upload-info">
+          <span>📌 Tối đa 50 file mỗi lần · Chỉ định dạng .docx</span>
+        </div>
+      </div>
+
+      <!-- File queue -->
+      <div class="file-queue" id="file-queue" style="display:none">
+        <div class="queue-header">
+          <span id="queue-title">0 file đã chọn</span>
+          <div class="queue-actions">
+            <button class="btn-sm btn-outline" id="btn-clear-queue">Xóa</button>
+            <button class="btn-primary btn-run" id="btn-run">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Bắt đầu kiểm tra
+            </button>
+          </div>
+        </div>
+        <div class="queue-list" id="queue-list"></div>
+      </div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section class="progress-section" id="progress-section" style="display:none">
+      <div class="progress-card">
+        <div class="progress-header">
+          <div class="spinner" id="spinner"></div>
+          <span id="progress-label">Đang kiểm tra...</span>
+          <span id="progress-counter" class="progress-counter"></span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        </div>
+        <p id="progress-file" class="progress-file"></p>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="results-section" id="results-section" style="display:none">
+      <!-- Summary cards -->
+      <div class="summary-row" id="summary-row"></div>
+
+      <div class="results-layout">
+        <!-- Table -->
+        <div class="results-table-wrap">
+          <div class="table-header">
+            <h3>Danh sách kết quả</h3>
+            <div class="table-actions">
+              <button class="btn-sm btn-outline" id="btn-export">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Xuất Excel
+              </button>
+              <button class="btn-sm btn-ghost" id="btn-new-check">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                Kiểm tra mới
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="results-table" id="results-table">
+              <thead>
+                <tr>
+                  <th>File</th>
+                  <th>Sinh viên</th>
+                  <th>MSSV</th>
+                  <th>GVHD</th>
+                  <th class="col-num">Lỗi</th>
+                  <th class="col-num">C.báo</th>
+                  <th class="col-num">Điểm</th>
+                  <th>Kết quả</th>
+                </tr>
+              </thead>
+              <tbody id="results-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Detail panel -->
+        <div class="detail-panel" id="detail-panel">
+          <div class="detail-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            <p>Chọn một file để xem chi tiết</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: Config GVHD -->
+  <div class="modal-overlay" id="config-modal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Cấu hình danh sách GVHD</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">Mỗi giảng viên một dòng. Có thể paste từ Excel/Word thẳng vào đây.</p>
+        <textarea id="advisors-textarea" rows="14" placeholder="VD:&#10;TS Nguyễn Văn A&#10;ThS Trần Thị B&#10;..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" id="btn-cancel-config">Hủy</button>
+        <button class="btn-primary" id="btn-save-config">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Lưu cấu hình
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast-wrap" id="toast-wrap"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

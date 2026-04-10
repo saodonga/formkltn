@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual env
+venv/
+.venv/
+env/
+ENV/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project-specific — KHÔNG commit file KLTN của sinh viên
+web_results/
+*.xlsx
+*.docx
+!2026_Mau_viet_chuan_KLTN.docx
+!1. Huong dan trinh bay DATN.docx
+
+# Temp uploads
+/tmp/
+kltn_uploads/
+
+# Log
+*.log

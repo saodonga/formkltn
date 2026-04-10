@@ -1,0 +1,29 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Môi trường ảo
+venv/
+.venv/
+env/
+
+# macOS
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# File KLTN của sinh viên (không đưa vào image)
+*.docx
+*.xlsx
+web_results/
+
+# IDE
+.idea/
+.vscode/
+
+# Docs
+*.md
+!README.md
