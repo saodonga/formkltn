@@ -584,3 +584,83 @@ button { cursor: pointer; font-family: inherit; border: none; outline: none; }
   text-align: center; color: var(--text3); padding: 32px;
   font-size: 13px;
 }
+
+/* ── CAPTCHA ─────────────────────────────────────────────────────── */
+.captcha-box {
+  margin: 16px 0 0;
+  padding: 16px 18px;
+  background: rgba(37,99,235,0.06);
+  border: 1px solid rgba(37,99,235,0.2);
+  border-radius: var(--radius);
+  animation: toast-in 0.2s ease;
+}
+.captcha-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+  color: var(--accent-h); margin-bottom: 10px;
+}
+.captcha-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.captcha-question {
+  flex: 1;
+  font-size: 20px; font-weight: 800;
+  font-family: 'Courier New', monospace;
+  color: var(--text);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  letter-spacing: 1px;
+}
+.captcha-input {
+  width: 100px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 16px; font-weight: 700;
+  text-align: center;
+  outline: none;
+  transition: var(--transition);
+  /* Ẩn spin arrows */
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.captcha-input::-webkit-inner-spin-button,
+.captcha-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.captcha-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); }
+.captcha-input.correct { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+.captcha-input.wrong   { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,0.15); animation: shake 0.3s ease; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-4px); }
+  40%,80% { transform: translateX(4px); }
+}
+.captcha-refresh {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text2);
+  cursor: pointer; transition: var(--transition);
+  flex-shrink: 0;
+}
+.captcha-refresh:hover { color: var(--accent-h); border-color: var(--accent); background: rgba(37,99,235,0.1); }
+.captcha-hint {
+  font-size: 11px; margin-top: 6px; height: 16px;
+  transition: var(--transition);
+}
+.captcha-hint.ok  { color: #10b981; }
+.captcha-hint.err { color: var(--red); }
+
+/* ── QUEUE RUN ROW ───────────────────────────────────────────────── */
+.queue-run-row {
+  display: flex; justify-content: flex-end;
+  margin-top: 12px;
+}
+.btn-run:disabled {
+  opacity: 0.4; cursor: not-allowed;
+  filter: grayscale(40%);
+}
+.btn-run:disabled:hover { transform: none; box-shadow: none; }

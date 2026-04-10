@@ -63,13 +63,36 @@
           <span id="queue-title">0 file đã chọn</span>
           <div class="queue-actions">
             <button class="btn-sm btn-outline" id="btn-clear-queue">Xóa</button>
-            <button class="btn-primary btn-run" id="btn-run">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Bắt đầu kiểm tra
-            </button>
           </div>
         </div>
         <div class="queue-list" id="queue-list"></div>
+
+        <!-- CAPTCHA BOX -->
+        <div class="captcha-box" id="captcha-box">
+          <div class="captcha-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Xác nhận bạn không phải robot
+          </div>
+          <div class="captcha-row">
+            <span class="captcha-question" id="captcha-question">Đang tải...</span>
+            <input class="captcha-input" id="captcha-input" type="number" placeholder="Kết quả?" autocomplete="off" />
+            <button class="captcha-refresh" id="btn-captcha-refresh" title="Câu hỏi khác">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+              </svg>
+            </button>
+          </div>
+          <div class="captcha-hint" id="captcha-hint"></div>
+        </div>
+
+        <div class="queue-run-row">
+          <button class="btn-primary btn-run" id="btn-run" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Bắt đầu kiểm tra
+          </button>
+        </div>
       </div>
     </section>
 

@@ -8,6 +8,10 @@ let allResults   = [];   // {filename, score, ...}
 let selectedIdx  = -1;
 let currentTab   = 'ERROR';
 
+// CAPTCHA state
+let captchaToken  = '';   // Token từ server
+let captchaValid  = false; // Đã xác nhận đúng chưa
+
 // ── DOM Refs ─────────────────────────────────────────────────────
 const dropZone      = document.getElementById('drop-zone');
 const fileInput     = document.getElementById('file-input');
@@ -29,6 +33,67 @@ const progressFile  = document.getElementById('progress-file');
 const configModal   = document.getElementById('config-modal');
 const advisorsTa    = document.getElementById('advisors-textarea');
 const toastWrap     = document.getElementById('toast-wrap');
+const captchaBox    = document.getElementById('captcha-box');
+const captchaQEl    = document.getElementById('captcha-question');
+const captchaInput  = document.getElementById('captcha-input');
+const captchaHint   = document.getElementById('captcha-hint');
+
+// ── CAPTCHA ───────────────────────────────────────────────────
+async function fetchCaptcha() {
+  captchaToken = '';
+  captchaValid = false;
+  btnRun.disabled = true;
+  captchaInput.value = '';
+  captchaInput.className = 'captcha-input';
+  captchaHint.textContent = '';
+  captchaHint.className = 'captcha-hint';
+  captchaQEl.textContent = 'Đang tải...';
+  try {
+    const r = await fetch('/api/captcha');
+    if (!r.ok) throw new Error('Server error');
+    const d = await r.json();
+    captchaToken = d.token;
+    captchaQEl.textContent = d.question;
+  } catch {
+    captchaQEl.textContent = 'Lỗi tải CAPTCHA — nhấn ↻ để thử lại';
+  }
+}
+
+function checkCaptchaInput() {
+  const val = captchaInput.value.trim();
+  if (!val) {
+    captchaInput.className = 'captcha-input';
+    captchaHint.textContent = '';
+    captchaHint.className = 'captcha-hint';
+    captchaValid = false;
+    btnRun.disabled = true;
+    return;
+  }
+  // Kiểm tra real-time với server
+  fetch('/api/captcha/check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: captchaToken, answer: val }),
+  }).then(r => r.json()).then(d => {
+    if (d.valid) {
+      captchaInput.className = 'captcha-input correct';
+      captchaHint.textContent = '✅ Xác nhận đúng!';
+      captchaHint.className = 'captcha-hint ok';
+      captchaValid = true;
+      btnRun.disabled = false;
+    } else {
+      captchaInput.className = 'captcha-input wrong';
+      captchaHint.textContent = '❌ Không đúng, thử lại.';
+      captchaHint.className = 'captcha-hint err';
+      captchaValid = false;
+      btnRun.disabled = true;
+    }
+  }).catch(() => {});
+}
+
+captchaInput.addEventListener('input', checkCaptchaInput);
+captchaInput.addEventListener('keydown', e => { if (e.key === 'Enter' && captchaValid) runCheck(); });
+document.getElementById('btn-captcha-refresh').addEventListener('click', fetchCaptcha);
 
 // ── UPLOAD / DRAG & DROP ─────────────────────────────────────────
 btnSelectFiles.addEventListener('click', () => fileInput.click());
@@ -89,8 +154,11 @@ function renderQueue() {
   if (pendingFiles.length > 0) {
     fileQueue.style.display = 'block';
     document.getElementById('upload-section').querySelector('.upload-zone').style.display = 'none';
+    // Tải CAPTCHA mới mỗi khi queue thay đổi từ 0 → có file
+    if (!captchaToken) fetchCaptcha();
   } else {
     fileQueue.style.display = 'none';
+    captchaToken = ''; captchaValid = false; btnRun.disabled = true;
     document.getElementById('upload-section').querySelector('.upload-zone').style.display = '';
   }
 }
@@ -102,6 +170,7 @@ btnRun.addEventListener('click', runCheck);
 
 async function runCheck() {
   if (!pendingFiles.length) { toast('Chưa có file nào', 'error'); return; }
+  if (!captchaValid) { toast('Vui lòng giải câu đố xác nhận trước', 'error'); return; }
 
   // Hiện progress
   allResults = [];
@@ -114,6 +183,11 @@ async function runCheck() {
 
   const fd = new FormData();
   pendingFiles.forEach(f => fd.append('files', f));
+  // Đính kèm captcha token và đáp án
+  fd.append('captcha_token',  captchaToken);
+  fd.append('captcha_answer', captchaInput.value.trim());
+  // Reset captcha sau khi gửi (token 1 lần)
+  captchaToken = ''; captchaValid = false; btnRun.disabled = true;
 
   let resp;
   try {

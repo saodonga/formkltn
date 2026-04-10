@@ -11,11 +11,16 @@ import os
 import sys
 import json
 import uuid
+import time
+import random
+import secrets
 import tempfile
 import threading
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory, Response
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import queue
 
 # Import các thư viện (đã khai báo trong requirements.txt)
@@ -26,6 +31,15 @@ from check_format_kltn import check_file, CheckResult, export_excel
 
 app = Flask(__name__, static_folder="web_static", static_url_path="/static")
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB upload limit
+app.config['SECRET_KEY'] = secrets.token_hex(32)
+
+# ── Rate Limiter ─────────────────────────────────────────────────
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=[],          # Không áp default toàn app
+    storage_uri="memory://",
+)
 
 # ── Cấu hình ────────────────────────────────────────────────────
 BASE_DIR    = Path(__file__).parent
@@ -35,9 +49,54 @@ RESULT_DIR  = BASE_DIR / "web_results"
 UPLOAD_DIR.mkdir(exist_ok=True)
 RESULT_DIR.mkdir(exist_ok=True)
 
-# In-memory job store
+# ── In-memory stores ─────────────────────────────────────────────
 _jobs: dict[str, dict] = {}
 _jobs_lock = threading.Lock()
+
+# CAPTCHA store: {token_str: {answer, expires, used}}
+_captcha_store: dict[str, dict] = {}
+_captcha_lock  = threading.Lock()
+CAPTCHA_TTL    = 10 * 60  # 10 phút
+
+def _make_captcha() -> dict:
+    """Tạo bài toán ngẫu nhiên, trả về {token, question, answer}."""
+    kind = random.choice(['add', 'sub', 'mul'])
+    if kind == 'add':
+        a, b = random.randint(10, 99), random.randint(1, 30)
+        q, ans = f"{a} + {b}", a + b
+    elif kind == 'sub':
+        a, b = random.randint(20, 99), random.randint(1, 19)
+        q, ans = f"{a} - {b}", a - b
+    else:
+        a, b = random.randint(2, 12), random.randint(2, 12)
+        q, ans = f"{a} × {b}", a * b
+    token = secrets.token_urlsafe(20)
+    with _captcha_lock:
+        # Xóa token hết hạn
+        now = time.time()
+        expired = [k for k, v in _captcha_store.items() if v['expires'] < now]
+        for k in expired:
+            del _captcha_store[k]
+        _captcha_store[token] = {'answer': ans, 'expires': now + CAPTCHA_TTL, 'used': False}
+    return {'token': token, 'question': f"{q} = ?"}
+
+def _verify_captcha(token: str, answer: str) -> bool:
+    """Kiểm tra đáp án. Token chỉ dùng được 1 lần."""
+    if not token or not answer:
+        return False
+    with _captcha_lock:
+        entry = _captcha_store.get(token)
+        if not entry:
+            return False
+        if entry['used'] or entry['expires'] < time.time():
+            return False
+        try:
+            correct = int(answer.strip()) == entry['answer']
+        except ValueError:
+            return False
+        if correct:
+            entry['used'] = True  # Token 1 lần
+        return correct
 
 
 # ════════════════════════════════════════════════════════════════
@@ -99,6 +158,36 @@ def index():
 #  ROUTES — API
 # ════════════════════════════════════════════════════════════════
 
+# ── GET /api/captcha ────────────────────────────────────────────
+@app.route("/api/captcha", methods=["GET"])
+@limiter.limit("30 per hour;5 per minute")
+def get_captcha():
+    """Trả về bài toán mới. Client gọi trước mỗi phiên upload."""
+    c = _make_captcha()
+    return jsonify({'token': c['token'], 'question': c['question']})
+
+
+# ── POST /api/captcha/check ──────────────────────────────────────
+@app.route("/api/captcha/check", methods=["POST"])
+@limiter.limit("60 per hour;15 per minute")
+def check_captcha():
+    """Verify real-time (peek) — KHÔNG consume token, chỉ kiểm tra đúng/sai."""
+    data   = request.get_json(force=True) or {}
+    token  = data.get("token", "")
+    answer = data.get("answer", "")
+    if not token or not answer:
+        return jsonify({"valid": False})
+    with _captcha_lock:
+        entry = _captcha_store.get(token)
+        if not entry or entry['used'] or entry['expires'] < time.time():
+            return jsonify({"valid": False})
+        try:
+            valid = int(str(answer).strip()) == entry['answer']
+        except (ValueError, TypeError):
+            valid = False
+    return jsonify({"valid": valid})
+
+
 # ── GET /api/config ──────────────────────────────────────────────
 @app.route("/api/config", methods=["GET"])
 def get_config():
@@ -120,11 +209,16 @@ def set_config():
 
 # ── POST /api/check ──────────────────────────────────────────────
 @app.route("/api/check", methods=["POST"])
+@limiter.limit("30 per hour;10 per minute")
 def check():
     """
     Nhận một hoặc nhiều file .docx, kiểm tra và trả kết quả JSON.
-    Với file lớn / nhiều file → tạo job và stream SSE.
+    Yêu cầu captcha_token + captcha_answer hợp lệ.
     """
+    captcha_token  = request.form.get('captcha_token', '')
+    captcha_answer = request.form.get('captcha_answer', '')
+    if not _verify_captcha(captcha_token, captcha_answer):
+        return jsonify({'error': 'Mã xác nhận không đúng hoặc đã hết hạn. Vui lòng làm mới và thử lại.'}), 403
     files = request.files.getlist("files")
     if not files or all(f.filename == "" for f in files):
         return jsonify({"error": "Không có file nào được gửi"}), 400
