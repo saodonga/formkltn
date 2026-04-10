@@ -58,6 +58,15 @@ from docx.shared import Pt, Cm, Emu
 from docx.enum.text import WD_LINE_SPACING, WD_ALIGN_PARAGRAPH
 from openpyxl import Workbook
 from openpyxl.styles import Font as XFont, PatternFill, Alignment, Border, Side
+
+import zipfile
+# ── Patch: Bỏ qua lỗi Bad CRC-32 của thư viện zipfile khi đọc file Word có chứa ảnh bị lỗi ngầm
+_original_zip_ext_init = zipfile.ZipExtFile.__init__
+def _patched_zip_ext_init(self, *args, **kwargs):
+    _original_zip_ext_init(self, *args, **kwargs)
+    self._expected_crc = None  # Tắt kiểm tra CRC để ngăn python-docx crash
+zipfile.ZipExtFile.__init__ = _patched_zip_ext_init
+
 from openpyxl.utils import get_column_letter
 
 
