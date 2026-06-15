@@ -25,7 +25,7 @@
         </div>
       </div>
       <nav class="header-nav">
-        <span class="badge-version">v2.0 Web</span>
+        <span class="badge-version">v3.0 3D Edition</span>
         <button class="btn-ghost" id="btn-config" title="Cấu hình GVHD">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           Cấu hình GVHD
@@ -37,7 +37,7 @@
   <main class="main">
     <!-- UPLOAD ZONE -->
     <section class="upload-section" id="upload-section">
-      <div class="upload-zone" id="drop-zone">
+      <div class="upload-zone glass-panel" id="drop-zone">
         <div class="upload-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
@@ -58,7 +58,7 @@
       </div>
 
       <!-- File queue -->
-      <div class="file-queue" id="file-queue" style="display:none">
+      <div class="file-queue glass-panel" id="file-queue" style="display:none">
         <div class="queue-header">
           <span id="queue-title">0 file đã chọn</span>
           <div class="queue-actions">
@@ -98,7 +98,7 @@
 
     <!-- PROGRESS -->
     <section class="progress-section" id="progress-section" style="display:none">
-      <div class="progress-card">
+      <div class="progress-card glass-panel">
         <div class="progress-header">
           <div class="spinner" id="spinner"></div>
           <span id="progress-label">Đang kiểm tra...</span>
@@ -118,7 +118,7 @@
 
       <div class="results-layout">
         <!-- Table -->
-        <div class="results-table-wrap">
+        <div class="results-table-wrap glass-panel">
           <div class="table-header">
             <h3>Danh sách kết quả</h3>
             <div class="table-actions">
@@ -152,7 +152,7 @@
         </div>
 
         <!-- Detail panel -->
-        <div class="detail-panel" id="detail-panel">
+        <div class="detail-panel glass-panel" id="detail-panel">
           <div class="detail-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             <p>Chọn một file để xem chi tiết</p>
