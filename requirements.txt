@@ -5,3 +5,4 @@ gunicorn==23.0.0
 flask-limiter==3.9.0
 # build only (Windows EXE)
 pyinstaller>=6.0; sys_platform == "win32"
+sv_ttk>=2.0.0

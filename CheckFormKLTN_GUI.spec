@@ -30,6 +30,7 @@ a = Analysis(
         'tkinter.ttk',
         'tkinter.filedialog',
         'tkinter.messagebox',
+        'sv_ttk',
     ],
     hookspath=[],
     hooksconfig={},
