@@ -225,7 +225,8 @@ class KLTNChecker:
         self.filepath = filepath
         self.doc = docx.Document(filepath)
         self.result = CheckResult(filepath=filepath)
-        self._paras = self.doc.paragraphs
+        from docx.text.paragraph import Paragraph
+        self._paras = [Paragraph(p, self.doc._body) for p in self.doc._body._element.xpath('.//w:p')]
         self._all_text_paras = [p for p in self._paras if p.text.strip()]
 
     def check_all(self) -> CheckResult:
@@ -241,6 +242,7 @@ class KLTNChecker:
         self._check_references()
         self._check_abbreviations_and_quotes()
         self._check_ai_copy_anomalies()
+        self._check_page_numbers()
         self._compute_score()
         return self.result
 
@@ -681,26 +683,38 @@ class KLTNChecker:
 
             tol = Std.TOLERANCE_CM
 
-            # Khổ giấy
-            if w is not None and abs(w - Std.PAPER_W_CM) > tol:
-                self.result.issues.append(Issue(
-                    "Khổ giấy", "ERROR",
-                    f"Chiều rộng trang {w:.2f} cm ≠ chuẩn {Std.PAPER_W_CM} cm",
-                    loc, "Chỉnh khổ giấy về A4 (21 x 29.7 cm) trong Page Layout → Size."
-                ))
-            if h is not None and abs(h - Std.PAPER_H_CM) > tol:
-                self.result.issues.append(Issue(
-                    "Khổ giấy", "ERROR",
-                    f"Chiều cao trang {h:.2f} cm ≠ chuẩn {Std.PAPER_H_CM} cm",
-                    loc, "Chỉnh khổ giấy về A4."
-                ))
+            is_landscape = False
+            if w is not None and h is not None:
+                if abs(w - Std.PAPER_H_CM) <= tol and abs(h - Std.PAPER_W_CM) <= tol:
+                    is_landscape = True
+                else:
+                    if abs(w - Std.PAPER_W_CM) > tol:
+                        self.result.issues.append(Issue(
+                            "Khổ giấy", "ERROR",
+                            f"Chiều rộng trang {w:.2f} cm ≠ chuẩn {Std.PAPER_W_CM} cm",
+                            loc, "Chỉnh khổ giấy về A4 (21 x 29.7 cm) trong Page Layout → Size."
+                        ))
+                    if abs(h - Std.PAPER_H_CM) > tol:
+                        self.result.issues.append(Issue(
+                            "Khổ giấy", "ERROR",
+                            f"Chiều cao trang {h:.2f} cm ≠ chuẩn {Std.PAPER_H_CM} cm",
+                            loc, "Chỉnh khổ giấy về A4."
+                        ))
+
+            if is_landscape:
+                expected_tm, expected_lm, expected_rm, expected_bm = 3.0, 2.0, 2.0, 2.0
+            else:
+                expected_lm = Std.MARGIN_L_CM
+                expected_rm = Std.MARGIN_R_CM
+                expected_tm = Std.MARGIN_T_CM
+                expected_bm = Std.MARGIN_B_CM
 
             # Lề
             margin_checks = [
-                (lm, Std.MARGIN_L_CM, "Lề trái"),
-                (rm, Std.MARGIN_R_CM, "Lề phải"),
-                (tm, Std.MARGIN_T_CM, "Lề trên"),
-                (bm, Std.MARGIN_B_CM, "Lề dưới"),
+                (lm, expected_lm, "Lề trái"),
+                (rm, expected_rm, "Lề phải"),
+                (tm, expected_tm, "Lề trên"),
+                (bm, expected_bm, "Lề dưới"),
             ]
             for val, expected, name in margin_checks:
                 if val is not None and abs(val - expected) > tol:
@@ -1534,6 +1548,53 @@ class KLTNChecker:
                 "Văn phong học thuật không dùng 'bạn' hay 'tôi'. Đây thường là dấu hiệu sử dụng AI dịch/tạo bài. Cần tránh và thay thế bằng từ ngữ khách quan hơn (ví dụ: 'người dùng', 'nhóm tác giả')."
             ))
 
+    # ── 9.5 Kiểm tra số trang ─────────────────────────────────────
+    def _check_page_numbers(self):
+        """Kiểm tra thiết lập đánh số trang trong Footer."""
+        # KLTN có ít nhất 2 section:
+        # Section 1: Phần mở đầu (i, ii, iii...)
+        # Section 2: Phần nội dung (1, 2, 3...)
+        
+        has_page_num_field = False
+        is_centered = False
+        for si, sect in enumerate(self.doc.sections):
+            footer = sect.footer
+            # Kiểm tra XML của footer xem có field PAGE không
+            footer_xml = footer._element.xml
+            if 'instrText' in footer_xml and 'PAGE' in footer_xml:
+                has_page_num_field = True
+                
+                # Kiểm tra paragraph chứa 'PAGE' có canh giữa không
+                for p in footer.paragraphs:
+                    if 'instrText' in p._element.xml and 'PAGE' in p._element.xml:
+                        if p.alignment == WD_ALIGN_PARAGRAPH.CENTER or p.alignment == 1:
+                            is_centered = True
+                        break
+                break
+                
+        if not has_page_num_field:
+            self.result.issues.append(Issue(
+                "Đánh số trang", "WARNING",
+                "Chưa phát hiện thiết lập đánh số trang (Page Number) tự động ở Footer.",
+                "Footer",
+                "Cần chèn số trang ở Footer, canh giữa, cách đáy 0.5cm (Insert -> Page Number)."
+            ))
+        elif not is_centered:
+            self.result.issues.append(Issue(
+                "Đánh số trang", "WARNING",
+                "Phát hiện số trang nhưng chưa được canh giữa (Center Alignment).",
+                "Footer",
+                "Click đúp vào Footer, chọn dòng số trang và nhấn Ctrl+E để canh giữa chuẩn xác."
+            ))
+            
+        if len(self.doc.sections) < 2:
+            self.result.issues.append(Issue(
+                "Đánh số trang", "WARNING",
+                "Tài liệu chỉ có 1 Section, không thể đánh số trang khác nhau cho phần Mở đầu (i, ii, iii) và Nội dung (1, 2, 3).",
+                "Section Break",
+                "Sử dụng Page Layout -> Breaks -> Section Break (Next Page) trước Chương 1 để tách phần mở đầu và nội dung."
+            ))
+
     # ── 10. Tính điểm ─────────────────────────────────────────────
     def _compute_score(self):
         errors   = [i for i in self.result.issues if i.severity == "ERROR"]
@@ -1618,10 +1679,35 @@ def export_excel(results: list, output_path: str):
     SEV_BG    = {"ERROR": "FFF0F0", "WARNING": "FFF8F0", "INFO": "F0FFF4"}
 
     # ─────────────────────────────────────────────────────────────
+    # Sheet 0: Ghi chú
+    # ─────────────────────────────────────────────────────────────
+    ws_note = wb.active
+    ws_note.title = "Ghi chú hạn chế"
+    ws_note.sheet_properties.tabColor = "F59E0B"
+    
+    ws_note.column_dimensions['A'].width = 120
+    c_title = ws_note.cell(row=1, column=1, value="LƯU Ý VỀ CÁC HẠN CHẾ CỦA TỰ ĐỘNG HÓA KIỂM TRA")
+    c_title.font = XFont(name='Arial', size=14, bold=True, color='C00000')
+    ws_note.row_dimensions[1].height = 30
+    
+    notes = [
+        "Vì giới hạn của thư viện xử lý tài liệu, một số quy định sau KHÔNG THỂ kiểm tra bằng phần mềm.",
+        "Giảng viên và Sinh viên lưu ý TỰ KIỂM TRA MẮT các nội dung sau:",
+        "",
+        "1. Quy định 'Không để ngắt trang xảy ra ở giữa hình, bảng biểu'.",
+        "2. Quy định chú thích (caption): Chú thích của Bảng phải nằm ở PHÍA TRÊN bảng, của Hình phải nằm PHÍA DƯỚI hình.",
+        "3. Kiểm tra trích dẫn chuẩn IEEE: Việc khớp chính xác chỉ mục [1], [2] trong văn bản với danh mục khá phức tạp."
+    ]
+    
+    for i, text in enumerate(notes, 2):
+        cell = ws_note.cell(row=i, column=1, value=text)
+        cell.font = XFont(name='Arial', size=11, bold=(i<=3), italic=(i==3))
+        ws_note.row_dimensions[i].height = 20
+
+    # ─────────────────────────────────────────────────────────────
     # Sheet 1: Tóm tắt tổng hợp
     # ─────────────────────────────────────────────────────────────
-    ws1 = wb.active
-    ws1.title = "Tổng hợp"
+    ws1 = wb.create_sheet("Tổng hợp")
     ws1.sheet_properties.tabColor = "1F3864"
 
     # Tiêu đề

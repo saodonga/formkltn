@@ -18,6 +18,7 @@ def _ensure(pkg, imp=None):
 
 _ensure("python-docx", "docx")
 _ensure("openpyxl")
+_ensure("sv_ttk")
 
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -55,35 +56,11 @@ SEV_BG    = {"ERROR": "#FEE2E2", "WARNING": "#FEF3C7", "INFO": "#D1FAE5"}
 # ════════════════════════════════════════════════════════════════
 #  WIDGET TIỆN ÍCH
 # ════════════════════════════════════════════════════════════════
-class RoundButton(tk.Button):
-    """Nút có màu nền tùy chỉnh, tương thích macOS."""
-    def __init__(self, parent, text="", command=None, width=160, height=36,
-                 bg=C["accent"], fg=C["text"], font=("Segoe UI", 10, "bold"),
-                 radius=10, hover_bg=None, **kw):
-        self._bg = bg
-        self._hover = hover_bg or self._darken(bg)
-        kw.pop("radius", None)
-        super().__init__(
-            parent, text=text, command=command,
-            bg=bg, fg=fg, font=font,
-            activebackground=self._hover, activeforeground=fg,
-            relief="flat", bd=0, padx=12, pady=6,
-            cursor="hand2", **kw
-        )
-        self.bind("<Enter>", lambda e: self.config(bg=self._hover))
-        self.bind("<Leave>", lambda e: self.config(bg=self._bg))
-
-    def _darken(self, hex_color):
-        r, g, b = int(hex_color[1:3],16), int(hex_color[3:5],16), int(hex_color[5:7],16)
-        f = 0.80
-        return f"#{int(r*f):02x}{int(g*f):02x}{int(b*f):02x}"
-
-
 class ScoreRing(tk.Canvas):
     """Vòng điểm số dạng arc."""
     def __init__(self, parent, size=110, **kw):
         super().__init__(parent, width=size, height=size,
-                         bg=parent["bg"], highlightthickness=0, **kw)
+                         highlightthickness=0, **kw)
         self._sz = size
         self._score = 0
 
@@ -118,8 +95,10 @@ class ScoreRing(tk.Canvas):
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("CheckForm KLTN — v1.0")
-        self.configure(bg=C["bg"])
+        import sv_ttk
+        sv_ttk.set_theme("light")
+        self.title("CheckForm KLTN — v2.0")
+        # self.configure(bg=C["bg"])
         self.geometry("1080x720")
         self.minsize(980, 640)
         self.resizable(True, True)
@@ -142,95 +121,88 @@ class App(tk.Tk):
     # ── BUILD UI ────────────────────────────────────────────────
     def _build_ui(self):
         # ── Header ──
-        hdr = tk.Frame(self, bg=C["panel"], height=64)
+        hdr = ttk.Frame(self, height=64)
         hdr.pack(fill="x", side="top")
         hdr.pack_propagate(False)
 
-        tk.Label(hdr, text="⚙", bg=C["panel"], fg=C["accent"],
+        ttk.Label(hdr, text="⚙",
                  font=("Segoe UI", 20)).pack(side="left", padx=(18,6), pady=12)
-        tk.Label(hdr, text="Kiểm tra Định dạng KLTN",
-                 bg=C["panel"], fg=C["text"], font=("Segoe UI", 15, "bold")).pack(side="left", pady=12)
-        tk.Label(hdr, text="Trường ĐH Thủy Lợi · Khoa Kinh tế và Quản lý - Khoa Kế toán và Kinh doanh",
-                 bg=C["panel"], fg=C["text3"], font=("Segoe UI", 10)).pack(side="left", padx=14, pady=18)
+        ttk.Label(hdr, text="Kiểm tra Định dạng KLTN", font=("Segoe UI", 15, "bold")).pack(side="left", pady=12)
+        ttk.Label(hdr, text="Trường ĐH Thủy Lợi · Khoa Kinh tế và Quản lý - Khoa Kế toán và Kinh doanh", font=("Segoe UI", 10)).pack(side="left", padx=14, pady=18)
 
         # Version badge
-        badge = tk.Label(hdr, text=" v1.0 ", bg=C["acc2"], fg="#FFFFFF",
+        badge = ttk.Label(hdr, text=" v2.0 ",
                          font=("Segoe UI", 8, "bold"))
         badge.pack(side="right", padx=18, pady=22)
 
         # ── Toolbar ──
-        tb = tk.Frame(self, bg=C["bg"], pady=10)
+        tb = ttk.Frame(self)
         tb.pack(fill="x", padx=18)
 
-        self._pick_btn = RoundButton(tb, "📄  Chọn File .docx", command=self._pick_files,
-                    width=180, height=36, bg=C["accent"])
+        self._pick_btn = ttk.Button(tb, text="📄  Chọn File .docx", command=self._pick_files)
         self._pick_btn.pack(side="left", padx=(0,10))
-        self._folder_btn = RoundButton(tb, "📂  Chọn Thư mục", command=self._pick_folder,
-                    width=180, height=36, bg=C["acc2"])
+        self._folder_btn = ttk.Button(tb, text="📂  Chọn Thư mục", command=self._pick_folder)
         self._folder_btn.pack(side="left", padx=(0,10))
 
-        self._run_btn = RoundButton(tb, "▶  Bắt đầu kiểm tra", command=self._run_check,
-                                    width=190, height=36, bg="#2E6D45", hover_bg="#3A8F5C")
+        self._run_btn = ttk.Button(tb, text="▶  Bắt đầu kiểm tra", command=self._run_check, style="Accent.TButton")
         self._run_btn.pack(side="left", padx=(0,10))
 
-        self._export_btn = RoundButton(tb, "💾  Xuất Excel", command=self._export,
-                    width=150, height=36, bg="#D97706", hover_bg="#F59E0B")
+        self._rerun_btn = ttk.Button(tb, text="🔄  Chạy lại", command=self._run_again)
+        self._rerun_btn.pack(side="left", padx=(0,10))
+
+        self._export_btn = ttk.Button(tb, text="💾  Xuất Excel", command=self._export)
         self._export_btn.pack(side="left", padx=(0,10))
+
+        self._clear_btn = ttk.Button(tb, text="🗑  Xóa danh sách", command=self._clear)
+        self._clear_btn.pack(side="left", padx=(0,10))
 
         # Label đường dẫn
         self._path_var = tk.StringVar(value="Chưa chọn file / thư mục")
-        tk.Label(tb, textvariable=self._path_var, bg=C["bg"], fg=C["text3"],
+        ttk.Label(tb, textvariable=self._path_var,
                  font=("Segoe UI", 9), anchor="w").pack(side="left", padx=10)
 
-        # Clear button & Config Button
-        RoundButton(tb, "👥 Cấu hình GVHD", command=self._show_config_dialog,
-                    width=170, height=36, bg="#4A235A", hover_bg="#6C3483").pack(side="right", padx=(10,0))
-
-        RoundButton(tb, "✕  Xóa", command=self._clear,
-                    width=90, height=36, bg=C["border"], hover_bg="#505580",
-                    fg=C["text2"]).pack(side="right")
+        # Config Button
+        ttk.Button(tb, text="👥 Cấu hình GVHD", command=self._show_config_dialog).pack(side="right", padx=(10,0))
 
         # ── Body (paned) ──
-        paned = tk.PanedWindow(self, orient="horizontal", bg=C["bg"],
-                               sashwidth=6, sashrelief="flat", sashpad=2)
+        paned = ttk.PanedWindow(self, orient="horizontal")
         paned.pack(fill="both", expand=True, padx=18, pady=(0, 8))
 
         # Left — danh sách file
-        left = tk.Frame(paned, bg=C["bg"])
-        paned.add(left, width=480, minsize=300)
+        left = ttk.Frame(paned)
+        paned.add(left, weight=4)
         self._build_file_list(left)
 
         # Right — chi tiết lỗi
-        right = tk.Frame(paned, bg=C["bg"])
-        paned.add(right, minsize=340)
+        right = ttk.Frame(paned)
+        paned.add(right, weight=5)
         self._build_detail_panel(right)
 
         # ── Status bar (2 dòng) ──
-        sb = tk.Frame(self, bg=C["panel"])
+        sb = ttk.Frame(self)
         sb.pack(fill="x", side="bottom")
 
         # Dòng 1: file hiện tại
-        row1 = tk.Frame(sb, bg=C["panel"])
+        row1 = ttk.Frame(sb)
         row1.pack(fill="x", padx=10, pady=(4, 0))
 
         self._file_icon_var = tk.StringVar(value="")
-        tk.Label(row1, textvariable=self._file_icon_var, bg=C["panel"],
-                 fg=C["accent"], font=("Segoe UI", 9, "bold"), width=3).pack(side="left")
+        ttk.Label(row1, textvariable=self._file_icon_var, font=("Segoe UI", 9, "bold"), width=3).pack(side="left")
 
         self._file_name_var = tk.StringVar(value="Sẵn sàng.")
-        tk.Label(row1, textvariable=self._file_name_var, bg=C["panel"], fg=C["text"],
+        ttk.Label(row1, textvariable=self._file_name_var,
                  font=("Segoe UI", 9, "bold"), anchor="w").pack(side="left", fill="x", expand=True)
 
         self._counter_var = tk.StringVar(value="")
-        tk.Label(row1, textvariable=self._counter_var, bg=C["panel"], fg=C["text3"],
+        ttk.Label(row1, textvariable=self._counter_var,
                  font=("Segoe UI", 9)).pack(side="right", padx=6)
 
         # Dòng 2: status text + progressbar
-        row2 = tk.Frame(sb, bg=C["panel"])
+        row2 = ttk.Frame(sb)
         row2.pack(fill="x", padx=10, pady=(2, 4))
 
         self._status_var = tk.StringVar(value="")
-        tk.Label(row2, textvariable=self._status_var, bg=C["panel"], fg=C["text3"],
+        ttk.Label(row2, textvariable=self._status_var,
                  font=("Segoe UI", 8), anchor="w").pack(side="left", fill="x", expand=True)
 
         self._progress = ttk.Progressbar(row2, mode="determinate", length=260)
@@ -258,10 +230,10 @@ class App(tk.Tk):
         dlg.transient(self)
         dlg.grab_set()
 
-        lbl = tk.Label(dlg, text="Danh sách Cán bộ Hướng dẫn (Mỗi GV 1 dòng):", bg=C["bg"], fg=C["text"], font=("Segoe UI", 11, "bold"))
+        lbl = ttk.Label(dlg, text="Danh sách Cán bộ Hướng dẫn (Mỗi GV 1 dòng):", font=("Segoe UI", 11, "bold"))
         lbl.pack(pady=(20, 10), padx=20, anchor="w")
         
-        lbl_hint = tk.Label(dlg, text="Bạn có thể copy và paste cả 1 danh sách từ Excel/Word vào đây.", bg=C["bg"], fg=C["text3"], font=("Segoe UI", 9))
+        lbl_hint = ttk.Label(dlg, text="Bạn có thể copy và paste cả 1 danh sách từ Excel/Word vào đây.", font=("Segoe UI", 9))
         lbl_hint.pack(padx=20, anchor="w", pady=(0, 10))
 
         text_area = tk.Text(dlg, font=("Segoe UI", 11), bg=C["panel"], fg=C["text"], relief="flat", insertbackground=C["text"])
@@ -282,26 +254,25 @@ class App(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Không thể lưu file config: {str(e)}")
 
-        btn_frame = tk.Frame(dlg, bg=C["bg"])
+        btn_frame = ttk.Frame(dlg)
         btn_frame.pack(fill="x", padx=20, pady=(0, 20))
 
-        RoundButton(btn_frame, "💾 Lưu cấu hình", command=_save, width=150, height=36, bg=C["accent"]).pack(side="right")
-        RoundButton(btn_frame, "Hủy", command=dlg.destroy, width=100, height=36, bg=C["border"], hover_bg="#505580", fg=C["text2"]).pack(side="right", padx=(0, 10))
+        ttk.Button(btn_frame, text="💾 Lưu cấu hình", command=_save, style="Accent.TButton").pack(side="right")
+        ttk.Button(btn_frame, text="Hủy", command=dlg.destroy).pack(side="right", padx=(0, 10))
 
 
     # ── FILE LIST ───────────────────────────────────────────────
     def _build_file_list(self, parent):
         # Header
-        hdr = tk.Frame(parent, bg=C["card"], pady=8, padx=12)
+        hdr = ttk.Frame(parent)
         hdr.pack(fill="x", pady=(0, 4))
-        tk.Label(hdr, text="Danh sách file kiểm tra", bg=C["card"],
-                 fg=C["text"], font=("Segoe UI", 11, "bold")).pack(side="left")
-        self._count_lbl = tk.Label(hdr, text="", bg=C["card"], fg=C["text3"],
-                                   font=("Segoe UI", 9))
+        ttk.Label(hdr, text="Danh sách file kiểm tra", font=("Segoe UI", 11, "bold")).pack(side="left")
+        
+        self._count_lbl = ttk.Label(hdr, text="", font=("Segoe UI", 9))
         self._count_lbl.pack(side="right")
 
         # Summary bar
-        self._sum_frame = tk.Frame(parent, bg=C["bg"])
+        self._sum_frame = ttk.Frame(parent)
         self._sum_frame.pack(fill="x", pady=(0, 4))
 
         # Treeview
@@ -309,18 +280,7 @@ class App(tk.Tk):
         self._tree = ttk.Treeview(parent, columns=cols, show="headings",
                                   selectmode="browse")
 
-        style = ttk.Style()
-        style.theme_use("clam")
-        style.configure("Treeview",
-                         background=C["row_odd"], foreground=C["text"],
-                         fieldbackground=C["row_odd"], borderwidth=0,
-                         font=("Segoe UI", 9), rowheight=28)
-        style.configure("Treeview.Heading",
-                         background=C["card"], foreground=C["text2"],
-                         font=("Segoe UI", 9, "bold"), relief="flat", borderwidth=0)
-        style.map("Treeview",
-                  background=[("selected", C["row_sel"])],
-                  foreground=[("selected", C["text"])])
+        # sv_ttk handles Treeview styles automatically
 
         col_conf = {
             "filename": ("Tên file",    180, "w"),
@@ -357,7 +317,7 @@ class App(tk.Tk):
     # ── DETAIL PANEL ────────────────────────────────────────────
     def _build_detail_panel(self, parent):
         # Card thông tin SV
-        info_card = tk.Frame(parent, bg=C["card"])
+        info_card = ttk.Frame(parent)
         info_card.pack(fill="x", pady=(0, 6))
 
         # Score ring
@@ -372,10 +332,10 @@ class App(tk.Tk):
             ("📝 Đề tài",    "_lbl_dt"),
         ]
         for fi, (label, attr) in enumerate(fields):
-            tk.Label(info_card, text=label, bg=C["card"], fg=C["text3"],
+            ttk.Label(info_card, text=label,
                      font=("Segoe UI", 9)).grid(row=fi, column=1, sticky="w",
                                                 padx=(10, 4), pady=2)
-            lbl = tk.Label(info_card, text="—", bg=C["card"], fg=C["text"],
+            lbl = ttk.Label(info_card, text="—",
                            font=("Segoe UI", 10), anchor="w", wraplength=280)
             lbl.grid(row=fi, column=2, sticky="ew", padx=(0, 10), pady=2)
             setattr(self, attr, lbl)
@@ -383,13 +343,13 @@ class App(tk.Tk):
         info_card.columnconfigure(2, weight=1)
 
         # Eval row
-        self._eval_lbl = tk.Label(info_card, text="", bg=C["card"],
+        self._eval_lbl = ttk.Label(info_card, text="",
                                   font=("Segoe UI", 11, "bold"))
         self._eval_lbl.grid(row=4, column=1, columnspan=2, sticky="w",
                             padx=(10, 10), pady=(0, 8))
 
         # Tab: Lỗi / Cảnh báo / Thông tin
-        nb_frame = tk.Frame(parent, bg=C["bg"])
+        nb_frame = ttk.Frame(parent)
         nb_frame.pack(fill="both", expand=True)
 
         self._nb = ttk.Notebook(nb_frame)
@@ -404,7 +364,7 @@ class App(tk.Tk):
 
         self._issue_tabs = {}
         for tab_key, tab_name in [("ERROR", "❌  Lỗi"), ("WARNING", "⚠  Cảnh báo"), ("INFO", "ℹ  Thông tin")]:
-            frame = tk.Frame(self._nb, bg=C["bg"])
+            frame = ttk.Frame(self._nb)
             self._nb.add(frame, text=tab_name)
             self._issue_tabs[tab_key] = self._build_issue_list(frame)
 
@@ -416,7 +376,7 @@ class App(tk.Tk):
         sb.pack(side="right", fill="y")
         canvas.pack(fill="both", expand=True)
 
-        inner = tk.Frame(canvas, bg=C["bg"])
+        inner = ttk.Frame(canvas)
         win_id = canvas.create_window((0, 0), window=inner, anchor="nw")
 
         def _resize(e):
@@ -464,13 +424,43 @@ class App(tk.Tk):
             
         self._running = True
         self._stop_event.clear()
-        self._run_btn.config(text="⏹  Hủy / Dừng", bg=C["red"], activebackground=C["red"])
+        self._run_btn.config(text="⏹  Hủy / Dừng")
         self._pick_btn.config(state="disabled")
         self._folder_btn.config(state="disabled")
         self._export_btn.config(state="disabled")
         
         self._set_status("⏳ Đang kiểm tra...", progress=0)
         threading.Thread(target=self._worker, daemon=True).start()
+
+    def _run_again(self):
+        """Xóa lịch sử cũ và chạy lại các file đã chọn."""
+        if not hasattr(self, '_pending') or not self._pending:
+            messagebox.showwarning("Chưa có file", "Chưa có danh sách file nào để chạy lại!")
+            return
+            
+        # Xóa kết quả hiển thị cũ
+        self._results = []
+        self._selected_idx = -1
+        self._tree.delete(*self._tree.get_children())
+        for sev_key, inner in self._issue_tabs.items():
+            for w in inner.winfo_children(): w.destroy()
+        self._ring.set_score(0)
+        for attr in ("_lbl_sv", "_lbl_gv", "_lbl_ms", "_lbl_dt"):
+            getattr(self, attr).config(text="—")
+        self._eval_lbl.config(text="")
+        for w in self._sum_frame.winfo_children(): w.destroy()
+        self._count_lbl.config(text="")
+        self._file_icon_var.set("")
+        self._file_name_var.set("Sẵn sàng.")
+        self._counter_var.set("")
+        self._status_var.set("")
+        self._progress["value"] = 0
+        if self._spinner_job:
+            self.after_cancel(self._spinner_job)
+            self._spinner_job = None
+            
+        # Gọi lại hàm kiểm tra
+        self._run_check()
 
     def _worker(self):
         results = []
@@ -590,7 +580,7 @@ class App(tk.Tk):
         self._running = False
         
         # Phục hồi UI
-        self._run_btn.config(text="▶  Bắt đầu kiểm tra", bg="#2E6D45", activebackground="#3A8F5C")
+        self._run_btn.config(text="▶  Bắt đầu kiểm tra")
         self._pick_btn.config(state="normal")
         self._folder_btn.config(state="normal")
         self._export_btn.config(state="normal")
@@ -630,11 +620,11 @@ class App(tk.Tk):
             (total - passed, "Không đạt",    C["red"]),
             (errors,         "Tổng lỗi",     C["yellow"]),
         ]:
-            card = tk.Frame(self._sum_frame, bg=C["card"], padx=14, pady=6)
+            card = ttk.Frame(self._sum_frame)
             card.pack(side="left", padx=(0, 4), pady=2)
-            tk.Label(card, text=str(val), bg=C["card"], fg=color,
+            ttk.Label(card, text=str(val), foreground=color,
                      font=("Segoe UI", 16, "bold")).pack()
-            tk.Label(card, text=label, bg=C["card"], fg=C["text3"],
+            ttk.Label(card, text=label,
                      font=("Segoe UI", 8)).pack()
 
     def _on_select(self, event):
@@ -663,7 +653,7 @@ class App(tk.Tk):
         elif score >= 70: et, ec = "✔ Đạt",         C["green"]
         elif score >= 50: et, ec = "⚠ Cần sửa",    C["yellow"]
         else:             et, ec = "❌ Không đạt",  C["red"]
-        self._eval_lbl.config(text=et, fg=ec)
+        self._eval_lbl.config(text=et, foreground=ec)
 
         # Lọc issues theo severity
         for sev_key, inner in self._issue_tabs.items():
@@ -671,8 +661,7 @@ class App(tk.Tk):
                 w.destroy()
             filtered = [i for i in res.issues if i.severity == sev_key]
             if not filtered:
-                tk.Label(inner, text="Không có mục nào.", bg=C["bg"],
-                         fg=C["text3"], font=("Segoe UI", 9), pady=12).pack()
+                ttk.Label(inner, text="Không có mục nào.", font=("Segoe UI", 9), pady=12).pack()
             for iss in filtered:
                 self._add_issue_card(inner, iss)
 
@@ -680,28 +669,28 @@ class App(tk.Tk):
         color = SEV_COLOR.get(iss.severity, C["text"])
         bg    = SEV_BG.get(iss.severity, C["card"])
 
-        card = tk.Frame(parent, bg=bg, pady=8, padx=10)
+        card = ttk.Frame(parent)
         card.pack(fill="x", padx=4, pady=(0, 4))
 
         # Header
-        top = tk.Frame(card, bg=bg)
+        top = ttk.Frame(card)
         top.pack(fill="x")
-        tk.Label(top, text=iss.category, bg=bg, fg=color,
+        ttk.Label(top, text=iss.category,
                  font=("Segoe UI", 9, "bold")).pack(side="left")
         if iss.location:
-            tk.Label(top, text=f"  [{iss.location[:40]}]", bg=bg, fg=C["text3"],
+            ttk.Label(top, text=f"  [{iss.location[:40]}]",
                      font=("Segoe UI", 8, "italic")).pack(side="left")
 
         # Message
-        tk.Label(card, text=iss.message, bg=bg, fg=C["text"],
+        ttk.Label(card, text=iss.message,
                  font=("Segoe UI", 9), anchor="w", justify="left",
                  wraplength=340).pack(fill="x", pady=(3, 0))
 
         # Suggestion
         if iss.suggestion:
-            hint = tk.Frame(card, bg=C["border"], pady=1, padx=8)
+            hint = ttk.Frame(card)
             hint.pack(fill="x", pady=(5, 0))
-            tk.Label(hint, text="→ " + iss.suggestion, bg=C["border"], fg=C["text2"],
+            ttk.Label(hint, text="→ " + iss.suggestion,
                      font=("Segoe UI", 8), anchor="w", justify="left",
                      wraplength=320).pack(fill="x")
 
