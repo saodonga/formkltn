@@ -7,10 +7,6 @@ on:
       - main
     tags:
       - 'v*.*.*'
-    paths:
-      - '**.py'
-      - '**.spec'
-      - 'requirements.txt'
 
   # Chạy thủ công từ GitHub UI
   workflow_dispatch:
