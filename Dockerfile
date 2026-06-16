@@ -37,7 +37,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Chạy bằng gunicorn (production WSGI server)
 CMD ["gunicorn", "web_app:app", \
-     "--workers", "2", \
+     "--workers", "1", \
+     "--threads", "8", \
      "--timeout", "120", \
      "--bind", "0.0.0.0:8080", \
      "--access-logfile", "-", \
