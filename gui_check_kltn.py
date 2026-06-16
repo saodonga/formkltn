@@ -163,7 +163,7 @@ class App(ctk.CTk):
         title_box = ctk.CTkFrame(hdr, fg_color="transparent")
         title_box.pack(side="left", pady=12)
         ctk.CTkLabel(title_box, text="Kiểm tra Định dạng KLTN", font=("Segoe UI", 18, "bold"), text_color=C["text"]).pack(anchor="w")
-        ctk.CTkLabel(title_box, text="Trường ĐH Thủy Lợi · Khoa Kế toán và Quản trị Kinh doanh", font=("Segoe UI", 11), text_color=C["text2"]).pack(anchor="w", pady=(0,0))
+        ctk.CTkLabel(title_box, text="Trường ĐH Thủy Lợi · Khoa Kinh tế và Quản lý", font=("Segoe UI", 11), text_color=C["text2"]).pack(anchor="w", pady=(0,0))
 
         # Version badge
         badge = ctk.CTkLabel(hdr, text=" v3.0 3D Edition ",
