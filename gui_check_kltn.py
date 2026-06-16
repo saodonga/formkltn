@@ -267,14 +267,18 @@ class App(ctk.CTk):
         ctk.CTkLabel(dlg, text="Danh sách Cán bộ Hướng dẫn (Mỗi GV 1 dòng):", font=("Segoe UI", 14, "bold")).pack(pady=(20, 5), padx=20, anchor="w")
         ctk.CTkLabel(dlg, text="Bạn có thể copy và paste từ Excel/Word vào đây.", font=("Segoe UI", 12), text_color=C["text2"]).pack(padx=20, anchor="w", pady=(0, 15))
 
-        text_area = ctk.CTkTextbox(dlg, font=("Segoe UI", 13), fg_color=C["card"], border_color=C["border"], border_width=1)
+        text_area = ctk.CTkTextbox(dlg, font=("Segoe UI", 13), fg_color=C["card"], text_color=C["text"], border_color=C["border"], border_width=1)
         text_area.pack(fill="both", expand=True, padx=20, pady=(0, 20))
         text_area.insert("1.0", "\n".join(cfg.get("advisors", [])))
 
         def _save():
             content = text_area.get("1.0", "end").strip()
-            lines = [line.strip() for line in content.split('\n') if line.strip()]
-            cfg["advisors"] = lines
+            new_lines = [line.strip() for line in content.split('\n') if line.strip()]
+            existing = set(cfg.get("advisors", []))
+            for a in new_lines:
+                if a not in existing:
+                    cfg.setdefault("advisors", []).append(a)
+                    existing.add(a)
             try:
                 with open(cfg_path, 'w', encoding='utf-8') as f:
                     json.dump(cfg, f, ensure_ascii=False, indent=2)
