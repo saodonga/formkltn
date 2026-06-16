@@ -1628,10 +1628,10 @@ class KLTNChecker:
 # ════════════════════════════════════════════════════════════════
 #  QUÉT NHIỀU FILE
 # ════════════════════════════════════════════════════════════════
-def check_file(filepath: str) -> CheckResult:
+def check_file(filepath: str, progress_cb=None) -> CheckResult:
     try:
         checker = KLTNChecker(filepath)
-        return checker.check_all()
+        return checker.check_all(progress_cb=progress_cb)
     except Exception as e:
         r = CheckResult(filepath=filepath)
         r.issues.append(Issue(
