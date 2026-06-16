@@ -43,6 +43,7 @@ from typing import Optional
 
 # ─── Tự động cài thư viện nếu thiếu ─────────────────────────────
 def _ensure_pkg(pkg_name, import_name=None):
+    if getattr(sys, 'frozen', False): return
     import_name = import_name or pkg_name
     try:
         __import__(import_name)

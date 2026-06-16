@@ -11,6 +11,7 @@ from datetime import datetime
 
 # ── Tự cài thư viện ──────────────────────────────────────────────
 def _ensure(pkg, imp=None):
+    if getattr(sys, 'frozen', False): return
     try: __import__(imp or pkg)
     except ImportError:
         os.system(f"{sys.executable} -m pip install {pkg} -q")
