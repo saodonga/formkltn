@@ -45,10 +45,11 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
 
-      # 4. Build GUI EXE
-      - name: Build CheckFormKLTN GUI EXE
+      # 4. Build GUI EXE & v3 Webview EXE
+      - name: Build EXE Files
         run: |
           pyinstaller CheckFormKLTN_GUI.spec --clean --noconfirm
+          pyinstaller CheckFormKLTN_v3.spec --clean --noconfirm
           echo "Build done. Files in dist/:"
           dir dist
 
@@ -59,7 +60,14 @@ jobs:
             $size = (Get-Item "dist/CheckFormKLTN.exe").Length / 1MB
             Write-Host "✅ CheckFormKLTN.exe built successfully ($([math]::Round($size, 1)) MB)"
           } else {
-            Write-Error "❌ EXE not found!"
+            Write-Error "❌ CheckFormKLTN.exe not found!"
+            exit 1
+          }
+          if (Test-Path "dist/CheckFormKLTN_v3.exe") {
+            $size = (Get-Item "dist/CheckFormKLTN_v3.exe").Length / 1MB
+            Write-Host "✅ CheckFormKLTN_v3.exe built successfully ($([math]::Round($size, 1)) MB)"
+          } else {
+            Write-Error "❌ CheckFormKLTN_v3.exe not found!"
             exit 1
           }
         shell: pwsh
@@ -68,8 +76,10 @@ jobs:
       - name: Upload EXE as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CheckFormKLTN-Windows-EXE
-          path: dist/CheckFormKLTN.exe
+          name: CheckFormKLTN-Windows-EXEs
+          path: |
+            dist/CheckFormKLTN.exe
+            dist/CheckFormKLTN_v3.exe
           retention-days: 30
 
       # 7. Tạo GitHub Release (chỉ khi push tag hoặc workflow_dispatch có version)
@@ -98,12 +108,18 @@ jobs:
             3. Trải nghiệm giao diện Native 3D tuyệt đẹp.
             4. Chọn file / thư mục .docx để kiểm tra và Xuất kết quả ra Excel.
 
+            ### Tải về
+            - `CheckFormKLTN_v3.exe`: Bản giao diện Web 3D mới siêu đẹp (Khuyên dùng)
+            - `CheckFormKLTN.exe`: Bản Desktop Native cơ bản
+
             ### Yêu cầu
             - Windows 10 / 11 (64-bit)
             - Không cần cài đặt thêm gì
 
             > **Lưu ý:** Lần đầu chạy, Windows SmartScreen có thể hỏi xác nhận — chọn "Run anyway".
-          files: dist/CheckFormKLTN.exe
+          files: |
+            dist/CheckFormKLTN.exe
+            dist/CheckFormKLTN_v3.exe
           draft: false
           prerelease: false
         env:
