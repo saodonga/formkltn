@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY check_format_kltn.py .
 COPY web_app.py .
 COPY config_kltn.json .
+COPY stats_kltn.json .
 COPY web_static/ ./web_static/
 
 # Tạo thư mục cần thiết

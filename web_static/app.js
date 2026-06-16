@@ -59,6 +59,20 @@ async function fetchCaptcha() {
   }
 }
 
+async function loadStats() {
+  try {
+    const r = await fetch('/api/stats');
+    if (!r.ok) return;
+    const d = await r.json();
+    const counter = document.getElementById('stats-counter');
+    if (counter) {
+      counter.textContent = `Số văn bản đã check: ${d.checked_docx || 0}`;
+    }
+  } catch (e) {}
+}
+
+loadStats();
+
 function checkCaptchaInput() {
   const val = captchaInput.value.trim();
   if (!val) {
@@ -251,6 +265,7 @@ function showResults() {
   renderTable();
   pendingFiles = [];
   renderQueue();
+  loadStats();
 }
 
 function renderSummary() {

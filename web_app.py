@@ -188,23 +188,61 @@ def check_captcha():
     return jsonify({"valid": valid})
 
 
+STATS_PATH = BASE_DIR / "stats_kltn.json"
+
+def _load_stats():
+    if STATS_PATH.exists():
+        try:
+            with open(STATS_PATH, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {"checked_docx": 0}
+
+def _save_stats(st):
+    with open(STATS_PATH, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False)
+
+def _increment_stats(count=1):
+    st = _load_stats()
+    st["checked_docx"] += count
+    _save_stats(st)
+
+# Khởi tạo file stats ngay khi boot app nếu chưa có
+if not STATS_PATH.exists():
+    try:
+        if STATS_PATH.is_dir():
+            import shutil
+            shutil.rmtree(STATS_PATH)
+        _save_stats({"checked_docx": 0})
+    except Exception:
+        pass
+
+@app.route("/api/stats", methods=["GET"])
+def get_stats():
+    return jsonify(_load_stats())
+
 # ── GET /api/config ──────────────────────────────────────────────
 @app.route("/api/config", methods=["GET"])
 def get_config():
     return jsonify(_load_config())
 
 
-# ── POST /api/config ─────────────────────────────────────────────
 @app.route("/api/config", methods=["POST"])
 def set_config():
     data = request.get_json(force=True)
     cfg = _load_config()
     if "advisors" in data:
-        cfg["advisors"] = [a.strip() for a in data["advisors"] if a.strip()]
+        new_advisors = [a.strip() for a in data["advisors"] if a.strip()]
+        existing = set(cfg.get("advisors", []))
+        for a in new_advisors:
+            if a not in existing:
+                cfg.setdefault("advisors", []).append(a)
+                existing.add(a)
     if "_title_min_length" in data:
         cfg["_title_min_length"] = int(data["_title_min_length"])
     _save_config(cfg)
-    return jsonify({"ok": True, "count": len(cfg["advisors"])})
+    return jsonify({"ok": True, "count": len(cfg.get("advisors", []))})
 
 
 # ── POST /api/check ──────────────────────────────────────────────
@@ -239,6 +277,7 @@ def check():
 
     # Nếu chỉ 1 file → xử lý đồng bộ (nhanh)
     if len(saved_paths) == 1:
+        _increment_stats(1)
         dest, orig_name = saved_paths[0]
         try:
             res = check_file(str(dest))
@@ -255,6 +294,7 @@ def check():
         return jsonify({"job_id": job_id, "total": 1, "results": [data]})
 
     # Nhiều file → chạy background, client dùng SSE
+    _increment_stats(len(saved_paths))
     with _jobs_lock:
         _jobs[job_id] = {
             "total":   len(saved_paths),

@@ -9,8 +9,9 @@ services:
     ports:
       - "8080:8080"    # Đổi port trái nếu cần (VD: "80:8080")
     volumes:
-      # Mount config GVHD để persist qua các lần restart
+      # Mount config GVHD và file lưu đếm số văn bản để persist qua các lần restart
       - ./config_kltn.json:/app/config_kltn.json
+      - ./stats_kltn.json:/app/stats_kltn.json
     environment:
       - FLASK_ENV=production
       - PORT=8080
