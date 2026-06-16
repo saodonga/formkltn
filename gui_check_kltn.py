@@ -241,7 +241,8 @@ class App(ctk.CTk):
         self._counter_var = ctk.StringVar(value="")
         
         ctk.CTkLabel(sb, textvariable=self._file_name_var, font=("Segoe UI", 12, "bold"), text_color=C["text"]).pack(side="left", padx=24)
-        ctk.CTkLabel(sb, textvariable=self._counter_var, font=("Segoe UI", 12, "bold"), text_color=C["accent"]).pack(side="right", padx=24)
+        ctk.CTkLabel(sb, text="Kinh tế số TLU - ver 3.0", font=("Segoe UI", 11, "italic"), text_color=C["text2"]).pack(side="right", padx=16)
+        ctk.CTkLabel(sb, textvariable=self._counter_var, font=("Segoe UI", 12, "bold"), text_color=C["accent"]).pack(side="right", padx=(16, 0))
         
         self._progress = ctk.CTkProgressBar(sb, width=300, height=8, progress_color=C["violet"], fg_color=C["border"])
         self._progress.set(0)
