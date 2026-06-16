@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from check_format_kltn import check_file, CheckResult, export_excel
 
 app = Flask(__name__, static_folder="web_static", static_url_path="/static")
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB upload limit
+app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB upload limit
 app.config['SECRET_KEY'] = secrets.token_hex(32)
 
 # ── Rate Limiter ─────────────────────────────────────────────────
