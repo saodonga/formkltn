@@ -1,9 +1,12 @@
-import sys
+import os
 from pathlib import Path
 import threading
 import webview
 import time
 import socket
+
+# Thiết lập cờ báo hiệu đây là bản Desktop App (để tắt Captcha)
+os.environ["DESKTOP_MODE"] = "1"
 
 # Khởi tạo server Flask từ web_app
 from web_app import app

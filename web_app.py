@@ -42,6 +42,7 @@ limiter = Limiter(
 )
 
 # ── Cấu hình ────────────────────────────────────────────────────
+IS_DESKTOP  = os.environ.get("DESKTOP_MODE") == "1"
 BASE_DIR    = Path(__file__).parent
 CONFIG_PATH = BASE_DIR / "config_kltn.json"
 UPLOAD_DIR  = Path(tempfile.gettempdir()) / "kltn_uploads"
@@ -236,7 +237,9 @@ def get_stats():
 # ── GET /api/config ──────────────────────────────────────────────
 @app.route("/api/config", methods=["GET"])
 def get_config():
-    return jsonify(_load_config())
+    cfg = _load_config()
+    cfg["desktop_mode"] = IS_DESKTOP
+    return jsonify(cfg)
 
 
 @app.route("/api/config", methods=["POST"])

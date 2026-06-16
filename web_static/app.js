@@ -11,6 +11,7 @@ let currentTab   = 'ERROR';
 // CAPTCHA state
 let captchaToken  = '';   // Token từ server
 let captchaValid  = false; // Đã xác nhận đúng chưa
+let isDesktopMode = false; // Chạy trên App Desktop thì tắt Captcha
 
 // ── DOM Refs ─────────────────────────────────────────────────────
 const dropZone      = document.getElementById('drop-zone');
@@ -40,6 +41,13 @@ const captchaHint   = document.getElementById('captcha-hint');
 
 // ── CAPTCHA ───────────────────────────────────────────────────
 async function fetchCaptcha() {
+  if (isDesktopMode) {
+    captchaBox.style.display = 'none';
+    captchaValid = true;
+    btnRun.disabled = false;
+    return;
+  }
+  
   captchaToken = '';
   captchaValid = false;
   btnRun.disabled = true;
@@ -545,6 +553,18 @@ function toast(msg, type = 'info') {
   toastWrap.appendChild(el);
   setTimeout(() => { el.style.transition = '0.3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3500);
 }
+
+// ── INIT ────────────────────────────────────────────────────────
+fetch('/api/config')
+  .then(r => r.json())
+  .then(d => { 
+    if (d.desktop_mode) {
+      isDesktopMode = true; 
+      captchaBox.style.display = 'none';
+      captchaValid = true;
+    }
+  })
+  .catch(() => {});
 
 // ── HELPERS ───────────────────────────────────────────────────────
 function esc(s) {
