@@ -448,3 +448,23 @@ button { cursor: pointer; font-family: inherit; outline: none; }
 
 /* ── TOAST ──────────────────────────────────────────────────────── */
 .toast { font-size: 14px; padding: 16px 20px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border-h); }
+
+/* ── RESPONSIVE / MOBILE ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .header-inner { flex-direction: column; gap: 12px; text-align: center; }
+  .logo { flex-direction: column; justify-content: center; }
+  .header-nav { flex-wrap: wrap; justify-content: center; gap: 8px; }
+  
+  .upload-zone { padding: 30px 16px; }
+  .upload-title { font-size: 20px; }
+  
+  .summary-row { flex-direction: column; gap: 16px; }
+  .table-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+  .table-wrap { overflow-x: auto; }
+  .results-table { min-width: 600px; }
+  
+  .detail-panel { min-width: 100%; border-left: none; border-top: 1px solid var(--border); }
+  .results-layout { grid-template-columns: 1fr; }
+  
+  .stat-card { min-width: unset; width: 100%; }
+}

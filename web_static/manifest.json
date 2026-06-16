@@ -1,0 +1,23 @@
+{
+  "name": "CheckForm KLTN",
+  "short_name": "CheckFormKLTN",
+  "description": "Công cụ kiểm tra định dạng KLTN trực tuyến — Trường Đại học Thủy Lợi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050811",
+  "theme_color": "#050811",
+  "icons": [
+    {
+      "src": "/static/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

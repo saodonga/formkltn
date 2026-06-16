@@ -151,7 +151,18 @@ def _result_to_dict(res: CheckResult) -> dict:
 # ════════════════════════════════════════════════════════════════
 @app.route("/")
 def index():
-    return send_from_directory("web_static", "index.html")
+    return send_from_directory(app.static_folder, "index.html")
+
+@app.route("/manifest.json")
+def serve_manifest():
+    return send_from_directory(app.static_folder, "manifest.json")
+
+@app.route("/sw.js")
+def serve_sw():
+    # Service worker cần header Content-Type chuẩn
+    resp = send_from_directory(app.static_folder, "sw.js")
+    resp.headers["Content-Type"] = "application/javascript; charset=utf-8"
+    return resp
 
 
 # ════════════════════════════════════════════════════════════════
