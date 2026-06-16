@@ -16,6 +16,7 @@ a = Analysis(
         # Đóng gói file config và engine cùng exe
         ('config_kltn.json', '.'),
         ('check_format_kltn.py', '.'),
+        ('web_static/logo.png', 'web_static'),
     ],
     hiddenimports=[
         'check_format_kltn',
@@ -36,7 +37,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['matplotlib', 'numpy', 'pandas', 'PIL', 'scipy', 'cv2'],
+    excludes=['matplotlib', 'numpy', 'pandas', 'scipy', 'cv2'],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,

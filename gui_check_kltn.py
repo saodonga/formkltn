@@ -19,6 +19,14 @@ _ensure("python-docx", "docx")
 _ensure("openpyxl")
 _ensure("customtkinter")
 _ensure("darkdetect")
+_ensure("Pillow", "PIL")
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(base_path, relative_path)
 
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
@@ -158,7 +166,16 @@ class App(ctk.CTk):
         hdr.pack(fill="x", side="top")
         hdr.pack_propagate(False)
 
-        ctk.CTkLabel(hdr, text="⚡", font=("Segoe UI", 28), text_color=C["violet"]).pack(side="left", padx=(24,8), pady=12)
+        logo_path = resource_path(os.path.join("web_static", "logo.png"))
+        if os.path.exists(logo_path):
+            try:
+                from PIL import Image
+                logo_img = ctk.CTkImage(light_image=Image.open(logo_path), dark_image=Image.open(logo_path), size=(40, 40))
+                ctk.CTkLabel(hdr, image=logo_img, text="").pack(side="left", padx=(24,8), pady=12)
+            except Exception:
+                ctk.CTkLabel(hdr, text="⚡", font=("Segoe UI", 28), text_color=C["violet"]).pack(side="left", padx=(24,8), pady=12)
+        else:
+            ctk.CTkLabel(hdr, text="⚡", font=("Segoe UI", 28), text_color=C["violet"]).pack(side="left", padx=(24,8), pady=12)
         
         title_box = ctk.CTkFrame(hdr, fg_color="transparent")
         title_box.pack(side="left", pady=12)
