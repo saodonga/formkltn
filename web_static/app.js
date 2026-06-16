@@ -211,8 +211,20 @@ async function runCheck() {
     progressSec.style.display = 'none';
     return;
   }
-  const data = await resp.json();
-  if (data.error) { toast(data.error, 'error'); progressSec.style.display = 'none'; return; }
+  let data;
+  try {
+    if (!resp.ok) {
+      const text = await resp.text();
+      try { data = JSON.parse(text); } catch(e) { throw new Error(`HTTP ${resp.status} - Lỗi server`); }
+    } else {
+      data = await resp.json();
+    }
+  } catch (err) {
+    toast('Lỗi đọc dữ liệu từ server: ' + err.message, 'error');
+    progressSec.style.display = 'none';
+    return;
+  }
+  if (data && data.error) { toast(data.error, 'error'); progressSec.style.display = 'none'; return; }
 
   if (!data.streaming) {
     // 1 file — kết quả ngay
@@ -232,6 +244,14 @@ async function runCheck() {
         evtSource.close();
         progressSec.style.display = 'none';
         showResults();
+      } else if (msg.result && msg.result.type === 'progress' || msg.type === 'progress') {
+        const prog = msg.result || msg;
+        progressBar.style.width = prog.pct + '%';
+        progressLabel.textContent = prog.msg;
+        if (total > 1) {
+          progressCounter.textContent = `${msg.done_count || 0}/${total}`;
+        }
+        progressFile.textContent = prog.filename;
       } else if (msg.result) {
         allResults.push(msg.result);
         const pct = Math.round(msg.done_count / total * 100);

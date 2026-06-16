@@ -229,21 +229,38 @@ class KLTNChecker:
         self._paras = [Paragraph(p, self.doc._body) for p in self.doc._body._element.xpath('.//w:p')]
         self._all_text_paras = [p for p in self._paras if p.text.strip()]
 
-    def check_all(self) -> CheckResult:
+    def check_all(self, progress_cb=None) -> CheckResult:
         """Chạy toàn bộ các kiểm tra."""
+        def step(pct, msg):
+            if progress_cb:
+                progress_cb(pct, msg)
+
+        step(5, "Đọc thông tin trang bìa...")
         self._extract_cover_info()
+        step(10, "Kiểm tra khổ giấy và lề...")
         self._check_page_setup()
+        step(20, "Kiểm tra định dạng trang bìa...")
         self._check_cover_pages()   # <-- kiểm tra trang bìa
+        step(35, "Kiểm tra font chữ (Times New Roman)...")
         self._check_font_and_styles()
+        step(50, "Kiểm tra cấu trúc tài liệu...")
         self._check_structure()
+        step(60, "Kiểm tra Heading (Chương, Mục)...")
         self._check_headings()
+        step(70, "Kiểm tra định dạng đoạn văn (Spacing)...")
         self._check_body_text()
+        step(80, "Kiểm tra Danh mục hình, bảng...")
         self._check_captions()
+        step(85, "Kiểm tra Trích dẫn (APA/IEEE)...")
         self._check_references()
+        step(90, "Kiểm tra từ viết tắt và ngoặc kép...")
         self._check_abbreviations_and_quotes()
+        step(95, "Phân tích dấu hiệu AI Copy...")
         self._check_ai_copy_anomalies()
+        step(98, "Kiểm tra đánh số trang...")
         self._check_page_numbers()
         self._compute_score()
+        step(100, "Hoàn thành kiểm tra!")
         return self.result
 
     # ── 0. Trích thông tin trang bìa ─────────────────────────────

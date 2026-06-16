@@ -286,25 +286,7 @@ def check():
     if not saved_paths:
         return jsonify({"error": "Chỉ chấp nhận file .docx"}), 400
 
-    # Nếu chỉ 1 file → xử lý đồng bộ (nhanh)
-    if len(saved_paths) == 1:
-        _increment_stats(1)
-        dest, orig_name = saved_paths[0]
-        try:
-            res = check_file(str(dest))
-            res.filepath = orig_name  # Dùng tên gốc
-            data = _result_to_dict(res)
-            data["filename"] = orig_name
-        except Exception as e:
-            data = {"filename": orig_name, "error": str(e)}
-        finally:
-            try:
-                dest.unlink()
-            except Exception:
-                pass
-        return jsonify({"job_id": job_id, "total": 1, "results": [data]})
-
-    # Nhiều file → chạy background, client dùng SSE
+    # Sử dụng background worker cho tất cả trường hợp (cả 1 file và nhiều file)
     _increment_stats(len(saved_paths))
     with _jobs_lock:
         _jobs[job_id] = {
@@ -317,9 +299,21 @@ def check():
 
     def _worker():
         job = _jobs[job_id]
-        for dest, orig_name in saved_paths:
+        total_files = len(saved_paths)
+        for i, (dest, orig_name) in enumerate(saved_paths):
+            def _prog_cb(pct, msg):
+                # Tính % tiến độ tổng quát
+                overall_pct = int(((i * 100) + pct) / total_files)
+                with _jobs_lock:
+                    job["queue"].put({
+                        "type": "progress",
+                        "pct": overall_pct,
+                        "msg": msg,
+                        "filename": orig_name
+                    })
+
             try:
-                res = check_file(str(dest))
+                res = check_file(str(dest), progress_cb=_prog_cb)
                 res.filepath = orig_name
                 d = _result_to_dict(res)
                 d["filename"] = orig_name
