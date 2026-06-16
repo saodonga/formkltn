@@ -83,6 +83,8 @@ def _make_captcha() -> dict:
 
 def _verify_captcha(token: str, answer: str) -> bool:
     """Kiểm tra đáp án. Token chỉ dùng được 1 lần."""
+    if IS_DESKTOP:
+        return True
     if not token or not answer:
         return False
     with _captcha_lock:
