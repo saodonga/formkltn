@@ -1072,7 +1072,18 @@ class KLTNChecker:
         """Kiểm tra style 'Body LA', 'Content', 'Normal' ở phần nội dung."""
         BODY_STYLES = {"Body LA", "Content", "Normal", "Body Text"}
 
-        body_paras = [p for p in self._paras
+        # Tìm vị trí đoạn đầu tiên có Heading 1 (bắt đầu nội dung thực sự, bỏ trang bìa)
+        heading1_idx = None
+        for i, p in enumerate(self._paras):
+            if p.style is not None and p.style.name.startswith("Heading 1"):
+                heading1_idx = i
+                break
+
+        # Nếu tìm thấy Heading 1, chỉ quét từ đó trở đi.
+        # Nếu không có Heading 1, quét toàn bộ (tránh bỏ sót lỗi của file chưa đánh Heading)
+        paras_to_check = self._paras[heading1_idx:] if heading1_idx is not None else self._paras
+
+        body_paras = [p for p in paras_to_check
                       if p.style is not None and p.style.name in BODY_STYLES and len(p.text.strip()) > 20]
 
         if not body_paras:
