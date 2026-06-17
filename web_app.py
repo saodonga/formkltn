@@ -174,7 +174,7 @@ def serve_sw():
 
 # ── GET /api/captcha ────────────────────────────────────────────
 @app.route("/api/captcha", methods=["GET"])
-@limiter.limit("120 per hour;20 per minute")
+@limiter.limit("200 per hour;50 per minute")
 def get_captcha():
     """Trả về bài toán mới. Client gọi trước mỗi phiên upload."""
     c = _make_captcha()
@@ -183,7 +183,7 @@ def get_captcha():
 
 # ── POST /api/captcha/check ──────────────────────────────────────
 @app.route("/api/captcha/check", methods=["POST"])
-@limiter.limit("120 per hour;30 per minute")
+@limiter.limit("200 per hour;50 per minute")
 def check_captcha():
     """Verify real-time (peek) — KHÔNG consume token, chỉ kiểm tra đúng/sai."""
     data   = request.get_json(force=True) or {}
@@ -302,7 +302,7 @@ def set_config():
 
 # ── POST /api/check ──────────────────────────────────────────────
 @app.route("/api/check", methods=["POST"])
-@limiter.limit("30 per hour;10 per minute")
+@limiter.limit("200 per hour;30 per minute")
 def check():
     """
     Nhận một hoặc nhiều file .docx, kiểm tra và trả kết quả JSON.
