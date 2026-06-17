@@ -622,6 +622,9 @@ class KLTNChecker:
             text = para.text.strip()
             if not text:
                 continue
+            
+            if para.style is None:
+                continue
 
             if GVHD_PAT.search(text):
                 gvhd_found_para = True
@@ -653,7 +656,7 @@ class KLTNChecker:
         elif not gvhd_lines:
             self.result.issues.append(Issue(
                 "Trang bìa — GVHD", "WARNING",
-                "Tìm thấy ô 'NGƯỜI HƯỚNG DẪN' nhưng chưa điền tên giảng viên.",
+                "Tìm thấy ô 'NGƯỜI HƯỚỜNG DẪN' nhưng chưa điền tên giảng viên.",
                 "Trang bìa",
                 "Điền học vị và họ tên giảng viên hướng dẫn vào trang bìa."
             ))
@@ -762,6 +765,8 @@ class KLTNChecker:
             if not text or len(text) < 3:
                 continue
 
+            if para.style is None:
+                continue
             sname = para.style.name
             if sname in SKIP_STYLES:
                 continue
@@ -846,6 +851,7 @@ class KLTNChecker:
         }
 
         for pi, para in enumerate(self._paras):
+            if para.style is None: continue
             sname = para.style.name
             text = para.text.strip()
             if not text:
@@ -1067,7 +1073,7 @@ class KLTNChecker:
         BODY_STYLES = {"Body LA", "Content", "Normal", "Body Text"}
 
         body_paras = [p for p in self._paras
-                      if p.style.name in BODY_STYLES and len(p.text.strip()) > 20]
+                      if p.style is not None and p.style.name in BODY_STYLES and len(p.text.strip()) > 20]
 
         if not body_paras:
             self.result.issues.append(Issue(
@@ -1197,7 +1203,7 @@ class KLTNChecker:
     # ── 6. Caption (chú thích hình / bảng) ───────────────────────
     def _check_captions(self):
         """Kiểm tra caption tồn tại và đúng định dạng."""
-        caption_paras = [p for p in self._paras if p.style.name == "Caption"]
+        caption_paras = [p for p in self._paras if p.style is not None and p.style.name == "Caption"]
 
         if not caption_paras:
             # Thử tìm bằng text pattern
@@ -1440,7 +1446,7 @@ class KLTNChecker:
         # 2. Quotes (Trích dẫn trực tiếp)
         # Bắt buộc nếu có "ngoặc kép nguyên văn" => phải có dẫn nguồn & ko đc quá dài.
         BODY_STYLES = {"Body LA", "Content", "Normal", "Body Text"}
-        content_paras = [p for p in self._paras if p.style.name in BODY_STYLES and len(p.text.strip()) > 10]
+        content_paras = [p for p in self._paras if p.style is not None and p.style.name in BODY_STYLES and len(p.text.strip()) > 10]
         
         # Giới hạn cảnh báo cho ngoặc kép (tránh spam nều tài liệu trích quá nhiều)
         warned_quotes = 0
@@ -1489,6 +1495,10 @@ class KLTNChecker:
         passed_chapter_1 = False
         
         for p in self._paras:
+            if p.style is None: continue
+            if p.style.name.startswith("Heading 1"):
+                passed_chapter_1 = True
+            
             text = p.text.strip()
             if not text:
                 continue
