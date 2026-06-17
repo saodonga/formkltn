@@ -113,7 +113,11 @@ function checkCaptchaInput() {
   }).catch(() => {});
 }
 
-captchaInput.addEventListener('input', checkCaptchaInput);
+let captchaTimeout;
+captchaInput.addEventListener('input', () => {
+  clearTimeout(captchaTimeout);
+  captchaTimeout = setTimeout(checkCaptchaInput, 300);
+});
 captchaInput.addEventListener('keydown', e => { if (e.key === 'Enter' && captchaValid) runCheck(); });
 document.getElementById('btn-captcha-refresh').addEventListener('click', fetchCaptcha);
 

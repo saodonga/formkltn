@@ -183,7 +183,7 @@ def get_captcha():
 
 # ── POST /api/captcha/check ──────────────────────────────────────
 @app.route("/api/captcha/check", methods=["POST"])
-@limiter.limit("60 per hour;15 per minute")
+@limiter.limit("120 per hour;30 per minute")
 def check_captcha():
     """Verify real-time (peek) — KHÔNG consume token, chỉ kiểm tra đúng/sai."""
     data   = request.get_json(force=True) or {}
