@@ -1083,15 +1083,18 @@ class KLTNChecker:
         # Nếu không có Heading 1, quét toàn bộ (tránh bỏ sót lỗi của file chưa đánh Heading)
         paras_to_check = self._paras[heading1_idx:] if heading1_idx is not None else self._paras
 
-        # Helper: kiểm tra đoạn có nằm trong ô bảng (table cell) không
+        # Helper: kiểm tra đoạn có nằm trong ô bảng hoặc hộp text box không
         def _is_in_table(para):
-            """Trả về True nếu đoạn văn nằm bên trong ô bảng Word."""
+            """Trả về True nếu đoạn văn nằm bên trong ô bảng (w:tc) hoặc hộp text box (w:txbxContent)."""
             el = para._element
             parent = el.getparent()
             while parent is not None:
-                if parent.tag.endswith('}tc'):   # w:tc = table cell
+                tag = parent.tag
+                if tag.endswith('}tc'):          # w:tc = table cell
                     return True
-                if parent.tag.endswith('}body'): # w:body = đã ra ngoài
+                if tag.endswith('}txbxContent'): # w:txbxContent = text box
+                    return True
+                if tag.endswith('}body'):        # w:body = đã ra ngoài tài liệu
                     break
                 parent = parent.getparent()
             return False
