@@ -1154,10 +1154,10 @@ class KLTNChecker:
 
         def _format_snippets(lst):
             if not lst: return ""
-            samples = [f"  - '{s}'" for s in lst[:30]]
+            samples = [f"  - '{s}'" for s in lst[:10]]
             res = "\n" + "\n".join(samples)
-            if len(lst) > 30:
-                res += f"\n  ... (và {len(lst) - 30} đoạn khác)"
+            if len(lst) > 10:
+                res += f"\n  ... (và {len(lst) - 10} đoạn khác)"
             return res
 
         total_checked = len(body_paras)
@@ -1165,32 +1165,32 @@ class KLTNChecker:
         if wrong_spacing:
             self.result.issues.append(Issue(
                 "Nội dung - Spacing", "ERROR",
-                f"{len(wrong_spacing)}/{total_checked} đoạn nội dung có khoảng cách/giãn dòng sai (Chuẩn: Before 10, After 0, Line spacing 1.5).",
-                f"Bao gồm: {_format_snippets(wrong_spacing)}",
+                f"{len(wrong_spacing)}/{total_checked} đoạn nội dung có khoảng cách/giãn dòng sai (Chuẩn: Before 10, After 0, Line spacing 1.5).\nDanh sách chi tiết:{_format_snippets(wrong_spacing)}",
+                "Nội dung (Body)",
                 "Đặt thông số khoảng cách cho dòng nội dung: Before 10pt, After 0pt, 1.5 lines."
             ))
 
         if wrong_align:
             self.result.issues.append(Issue(
                 "Nội dung - Alignment", "ERROR",
-                f"{len(wrong_align)}/{total_checked} đoạn nội dung không canh chỉ đều hai bên (Justify).",
-                f"Bao gồm: {_format_snippets(wrong_align)}",
+                f"{len(wrong_align)}/{total_checked} đoạn nội dung không canh chỉ đều hai bên (Justify).\nDanh sách chi tiết:{_format_snippets(wrong_align)}",
+                "Nội dung (Body)",
                 "Cần chọn toàn bộ nội dung (Ctrl+A) và chọn canh đều hai bên (Ctrl+J)."
             ))
             
         if wrong_indent:
             self.result.issues.append(Issue(
                 "Nội dung - Thụt dòng", "WARNING",
-                f"{len(wrong_indent)}/{total_checked} đoạn bị thụt lề đầu dòng (First line indent > 0).",
-                f"Bao gồm: {_format_snippets(wrong_indent)}",
+                f"{len(wrong_indent)}/{total_checked} đoạn bị thụt lề đầu dòng (First line indent > 0).\nDanh sách chi tiết:{_format_snippets(wrong_indent)}",
+                "Nội dung (Body)",
                 "Đoạn văn KLTN tiêu chuẩn không được thụt đầu dòng."
             ))
             
         if wrong_font:
             self.result.issues.append(Issue(
                 "Nội dung - Font", "WARNING",
-                f"{len(wrong_font)}/{total_checked} đoạn chưa đúng font Times New Roman hoặc chưa là cỡ 13pt.",
-                f"Bao gồm: {_format_snippets(wrong_font)}",
+                f"{len(wrong_font)}/{total_checked} đoạn chưa đúng font Times New Roman hoặc chưa là cỡ 13pt.\nDanh sách chi tiết:{_format_snippets(wrong_font)}",
+                "Nội dung (Body)",
                 "Đổi định dạng toàn bộ nội dung thành font Times New Roman, cỡ 13pt."
             ))
 
