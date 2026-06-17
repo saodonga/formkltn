@@ -1078,15 +1078,20 @@ class KLTNChecker:
             ))
             return
 
-        # Mẫu kiểm tra: lấy 20 đoạn đại diện
-        sample = body_paras[: min(30, len(body_paras))]
+        wrong_spacing = []
+        wrong_align   = []
+        wrong_indent  = []
+        wrong_font    = []
 
-        wrong_spacing = 0
-        wrong_align   = 0
-        wrong_indent  = 0
-        wrong_font    = 0
+        for para in body_paras:
+            t_lower = para.text.strip().lower()
+            if t_lower.startswith(("ghi chú", "nguồn")):
+                continue
 
-        for para in sample:
+            # Lấy 7 chữ đầu
+            words = para.text.strip().split()
+            snippet = " ".join(words[:7]) + "..." if len(words) > 7 else " ".join(words)
+
             pf = para.paragraph_format
             ls = pf.line_spacing
             ls_rule = pf.line_spacing_rule
@@ -1114,19 +1119,19 @@ class KLTNChecker:
                         is_15 = True
             
             if not is_15 or abs(sb_pt - 10) > 1.0 or abs(sa_pt - 0) > 1.0:
-                wrong_spacing += 1
+                wrong_spacing.append(snippet)
 
             # Justify (canh đều 2 bên) = 3
             al = para.alignment
             if al is None:
                 al = para.style.paragraph_format.alignment
             if al is not None and al != WD_ALIGN_PARAGRAPH.JUSTIFY:
-                wrong_align += 1
+                wrong_align.append(snippet)
                 
             # Không thụt đầu dòng (indent = 0)
             ind = pf.first_line_indent if pf.first_line_indent is not None else para.style.paragraph_format.first_line_indent
             if ind and ind > 0:
-                wrong_indent += 1
+                wrong_indent.append(snippet)
                 
             # Font TNR, 13pt
             sz = None
@@ -1145,37 +1150,47 @@ class KLTNChecker:
                 fn = para.style.font.name
             
             if (sz and abs(sz - 13.0) > 0.5) or (fn and fn != "Times New Roman"):
-                wrong_font += 1
+                wrong_font.append(snippet)
 
-        if wrong_spacing > len(sample) * 0.4:
+        def _format_snippets(lst):
+            if not lst: return ""
+            samples = [f"'{s}'" for s in lst[:3]]
+            res = ", ".join(samples)
+            if len(lst) > 3:
+                res += f" (và {len(lst) - 3} đoạn khác)"
+            return res
+
+        total_checked = len(body_paras)
+
+        if wrong_spacing:
             self.result.issues.append(Issue(
                 "Nội dung - Spacing", "ERROR",
-                f"{wrong_spacing}/{len(sample)} đoạn mẫu có khoảng cách / giãn dòng sai (Chuẩn: Before 10, After 0, Line spacing 1.5).",
-                "Body text",
+                f"{len(wrong_spacing)}/{total_checked} đoạn nội dung có khoảng cách/giãn dòng sai (Chuẩn: Before 10, After 0, Line spacing 1.5).",
+                f"Bao gồm: {_format_snippets(wrong_spacing)}",
                 "Đặt thông số khoảng cách cho dòng nội dung: Before 10pt, After 0pt, 1.5 lines."
             ))
 
-        if wrong_align > len(sample) * 0.4:
+        if wrong_align:
             self.result.issues.append(Issue(
                 "Nội dung - Alignment", "ERROR",
-                f"{wrong_align}/{len(sample)} đoạn mẫu không canh chỉ đều hai bên (Justify).",
-                "Body text",
+                f"{len(wrong_align)}/{total_checked} đoạn nội dung không canh chỉ đều hai bên (Justify).",
+                f"Bao gồm: {_format_snippets(wrong_align)}",
                 "Cần chọn toàn bộ nội dung (Ctrl+A) và chọn canh đều hai bên (Ctrl+J)."
             ))
             
-        if wrong_indent > len(sample) * 0.4:
+        if wrong_indent:
             self.result.issues.append(Issue(
                 "Nội dung - Thụt dòng", "WARNING",
-                f"{wrong_indent}/{len(sample)} đoạn bị thụt lề đầu dòng (First line indent > 0).",
-                "Body text",
+                f"{len(wrong_indent)}/{total_checked} đoạn bị thụt lề đầu dòng (First line indent > 0).",
+                f"Bao gồm: {_format_snippets(wrong_indent)}",
                 "Đoạn văn KLTN tiêu chuẩn không được thụt đầu dòng."
             ))
             
-        if wrong_font > len(sample) * 0.4:
+        if wrong_font:
             self.result.issues.append(Issue(
                 "Nội dung - Font", "WARNING",
-                f"{wrong_font}/{len(sample)} đoạn chưa đúng font Times New Roman hoặc chưa là cỡ 13pt.",
-                "Body text",
+                f"{len(wrong_font)}/{total_checked} đoạn chưa đúng font Times New Roman hoặc chưa là cỡ 13pt.",
+                f"Bao gồm: {_format_snippets(wrong_font)}",
                 "Đổi định dạng toàn bộ nội dung thành font Times New Roman, cỡ 13pt."
             ))
 
