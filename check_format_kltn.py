@@ -1729,12 +1729,22 @@ def export_excel(results: list, output_path: str):
         "",
         "1. Quy định 'Không để ngắt trang xảy ra ở giữa hình, bảng biểu'.",
         "2. Quy định chú thích (caption): Chú thích của Bảng phải nằm ở PHÍA TRÊN bảng, của Hình phải nằm PHÍA DƯỚI hình.",
-        "3. Kiểm tra trích dẫn chuẩn IEEE: Việc khớp chính xác chỉ mục [1], [2] trong văn bản với danh mục khá phức tạp."
+        "3. Kiểm tra trích dẫn chuẩn IEEE: Việc khớp chính xác chỉ mục [1], [2] trong văn bản với danh mục khá phức tạp.",
+        "",
+        "CÁCH TÍNH ĐIỂM:",
+        "- Bắt đầu với 100 điểm.",
+        "- Mỗi Lỗi (ERROR) bị trừ 10 điểm.",
+        "- Mỗi Cảnh báo (WARNING) bị trừ 3 điểm."
     ]
     
     for i, text in enumerate(notes, 2):
         cell = ws_note.cell(row=i, column=1, value=text)
-        cell.font = XFont(name='Arial', size=11, bold=(i<=3), italic=(i==3))
+        
+        # In đậm tiêu đề đầu và tiêu đề tính điểm
+        is_bold = (i <= 3) or ("CÁCH TÍNH ĐIỂM" in text)
+        is_italic = (i == 4)  # Dòng trống
+        
+        cell.font = XFont(name='Arial', size=11, bold=is_bold, italic=is_italic)
         ws_note.row_dimensions[i].height = 20
 
     # ─────────────────────────────────────────────────────────────
