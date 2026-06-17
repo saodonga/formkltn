@@ -1855,7 +1855,13 @@ def export_excel(results: list, output_path: str):
         issues_sorted = sorted(res.issues,
                                key=lambda x: {"ERROR": 0, "WARNING": 1, "INFO": 2}[x.severity])
         for iss in issues_sorted:
-            ws2.row_dimensions[row].height = 36
+            # Tự động tính chiều cao dòng dựa trên số lần xuống dòng trong message (danh sách lỗi)
+            nl_count = iss.message.count('\n')
+            if nl_count > 0:
+                ws2.row_dimensions[row].height = 20 + (nl_count * 15)
+            else:
+                ws2.row_dimensions[row].height = 36
+                
             fg_c = SEV_COLOR.get(iss.severity, '000000')
             bg_c = SEV_BG.get(iss.severity, 'FFFFFF')
             alt  = 'F7F7F7' if fi % 2 == 0 else 'FFFFFF'
