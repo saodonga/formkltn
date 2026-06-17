@@ -174,7 +174,7 @@ def serve_sw():
 
 # ── GET /api/captcha ────────────────────────────────────────────
 @app.route("/api/captcha", methods=["GET"])
-@limiter.limit("30 per hour;5 per minute")
+@limiter.limit("120 per hour;20 per minute")
 def get_captcha():
     """Trả về bài toán mới. Client gọi trước mỗi phiên upload."""
     c = _make_captcha()
