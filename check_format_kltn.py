@@ -1154,10 +1154,10 @@ class KLTNChecker:
 
         def _format_snippets(lst):
             if not lst: return ""
-            samples = [f"'{s}'" for s in lst[:3]]
-            res = ", ".join(samples)
-            if len(lst) > 3:
-                res += f" (và {len(lst) - 3} đoạn khác)"
+            samples = [f"  - '{s}'" for s in lst[:30]]
+            res = "\n" + "\n".join(samples)
+            if len(lst) > 30:
+                res += f"\n  ... (và {len(lst) - 30} đoạn khác)"
             return res
 
         total_checked = len(body_paras)
