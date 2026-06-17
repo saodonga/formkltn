@@ -203,6 +203,10 @@ def check_captcha():
 
 
 STATS_PATH = BASE_DIR / "stats_kltn.json"
+LOG_PATH = BASE_DIR / "upload_logs.json"
+
+_stats_lock = threading.Lock()
+_log_lock = threading.Lock()
 
 def _load_stats():
     if STATS_PATH.exists():
@@ -218,9 +222,44 @@ def _save_stats(st):
         json.dump(st, f, ensure_ascii=False)
 
 def _increment_stats(count=1):
-    st = _load_stats()
-    st["checked_docx"] += count
-    _save_stats(st)
+    with _stats_lock:
+        st = _load_stats()
+        st["checked_docx"] += count
+        _save_stats(st)
+        return st["checked_docx"]
+
+def _log_upload(ip, filename, log_id):
+    with _log_lock:
+        logs = []
+        if LOG_PATH.exists() and not LOG_PATH.is_dir():
+            try:
+                with open(LOG_PATH, 'r', encoding='utf-8') as f:
+                    logs = json.load(f)
+            except Exception:
+                pass
+        
+        now = datetime.now()
+        valid_logs = []
+        for log in logs:
+            try:
+                log_time = datetime.fromisoformat(log.get('time', ''))
+                if (now - log_time).days <= 30:
+                    valid_logs.append(log)
+            except ValueError:
+                pass
+        
+        valid_logs.append({
+            "log_id": log_id,
+            "ip": ip,
+            "time": now.isoformat(),
+            "filename": filename
+        })
+        
+        try:
+            with open(LOG_PATH, 'w', encoding='utf-8') as f:
+                json.dump(valid_logs, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
 
 # Khởi tạo file stats ngay khi boot app nếu chưa có
 if not STATS_PATH.exists():
@@ -292,7 +331,15 @@ def check():
         return jsonify({"error": "Chỉ chấp nhận file .docx"}), 400
 
     # Sử dụng background worker cho tất cả trường hợp (cả 1 file và nhiều file)
-    _increment_stats(len(saved_paths))
+    new_total = _increment_stats(len(saved_paths))
+    base_log_id = new_total - len(saved_paths)
+    
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    if ip and ',' in ip:
+        ip = ip.split(',')[0].strip()
+
+    for idx, (_, orig_name) in enumerate(saved_paths):
+        _log_upload(ip, orig_name, base_log_id + idx + 1)
     with _jobs_lock:
         _jobs[job_id] = {
             "total":   len(saved_paths),

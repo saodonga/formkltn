@@ -12,6 +12,7 @@ services:
       # Mount config GVHD và file lưu đếm số văn bản để persist qua các lần restart
       - ./config_kltn.json:/app/config_kltn.json
       - ./stats_kltn.json:/app/stats_kltn.json
+      - ./upload_logs.json:/app/upload_logs.json
     environment:
       - FLASK_ENV=production
       - PORT=8080
