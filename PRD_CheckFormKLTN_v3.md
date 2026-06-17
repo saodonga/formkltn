@@ -1,6 +1,6 @@
 # 🎓 CHECKFORM KLTN — Tài liệu PRD & Hướng dẫn sử dụng
 
-> **Phiên bản:** 3.x — Cập nhật tháng 06/2026  
+> **Phiên bản:** 3.1 — Cập nhật tháng 06/2026  
 > **Tổ chức:** Khoa Kinh tế & QTKD, Trường Đại học Thủy Lợi  
 > **Repository:** https://github.com/saodonga/formkltn
 
@@ -90,9 +90,11 @@ Từ Heading 1 đầu tiên trở đi, tool kiểm tra 4 tiêu chí với style 
 
 **Báo cáo chi tiết dòng lỗi:** Với mỗi loại lỗi, tool liệt kê **tối đa 10 đoạn văn bị lỗi đầu tiên** (7 từ đầu của mỗi đoạn) giúp sinh viên Ctrl+F trong Word để tìm và sửa trực tiếp.
 
-**Các đoạn bị bỏ qua** (không chấm lỗi nội dung):
+**Các đoạn bị bỏ qua hoàn toàn** (không chấm lỗi nội dung):
 - Đoạn bắt đầu bằng "Ghi chú" — chú thích nhỏ bên dưới bảng
 - Đoạn bắt đầu bằng "Nguồn" / "nguồn" — nguồn số liệu dưới bảng/hình
+- **Đoạn trong ô bảng** (`w:tc`) — nội dung cell bảng thường có định dạng riêng, không theo chuẩn nội dung thân bài
+- **Đoạn trong hộp text box / box vẽ** (`w:txbxContent`) — nội dung khung vẽ, sơ đồ, hộp tóm tắt có định dạng riêng
 
 #### 3.5. Kiểm tra Caption (Chú thích Hình/Bảng)
 
@@ -208,7 +210,7 @@ File Excel xuất ra gồm **4 sheet**:
 - **Multi-file upload**: Nhiều file .docx cùng lúc, xử lý tuần tự với tiến độ tổng
 - **JSON Logging**: Ghi log mỗi lần upload (IP, tên file, thời gian), tự xóa log >30 ngày
 - **Thống kê**: Hiển thị tổng số file đã kiểm tra
-- **Rate Limiting**: 30 lần check/giờ, 10 lần check/phút mỗi IP
+- **Rate Limiting**: **200 lần/giờ · 30 lần check/phút** mỗi IP
 - **Giới hạn upload**: Tối đa 500MB/request
 
 ---
@@ -221,6 +223,8 @@ File Excel xuất ra gồm **4 sheet**:
 | Đoạn văn bị mất Style (`para.style = None`) | Skip đoạn đó, tiếp tục kiểm tra bình thường |
 | Trang bìa có định dạng khác nội dung | Tự động phát hiện Heading 1 đầu tiên, chỉ kiểm tra từ đó trở đi |
 | Đoạn "Ghi chú" / "Nguồn" dưới bảng/hình | Bỏ qua không chấm lỗi spacing/font |
+| **Đoạn trong ô bảng (Table Cell)** | **Bỏ qua hoàn toàn** — nội dung bảng không theo chuẩn thân bài |
+| **Đoạn trong hộp text box / box vẽ** | **Bỏ qua hoàn toàn** — nội dung box vẽ không theo chuẩn thân bài |
 | File biểu mẫu (BanCBHD, BanPBIEN) | Vẫn chạy được, điểm thấp do thiếu cấu trúc KLTN |
 
 ---
